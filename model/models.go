@@ -95,8 +95,11 @@ type GitHubHookshot struct {
 	} `json:"head_commit"`
 }
 
-type DeployTarget struct {
+type DeployConfig struct {
 	ImageName     string
 	ImageTag      string
 	ContainerName string
+	Host          string
+	MountSource   string
+	MountTarget   string
 }

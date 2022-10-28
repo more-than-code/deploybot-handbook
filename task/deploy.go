@@ -2,24 +2,19 @@ package task
 
 import (
 	"github.com/more-than-code/deploybot/container"
+	"github.com/more-than-code/deploybot/model"
 )
 
-type DeployConfig struct {
-	ImageName     string
-	ImageTag      string
-	ContainerName string
-}
-
 type DeployTask struct {
-	cfg *DeployConfig
+	cfg *model.DeployConfig
 }
 
-func NewDeployTask(cfg *DeployConfig) *DeployTask {
+func NewDeployTask(cfg *model.DeployConfig) *DeployTask {
 	return &DeployTask{cfg: cfg}
 }
 
 func (t *DeployTask) Start() error {
 	helper := container.NewContainerHelper("unix:///var/run/docker.sock")
 
-	return helper.StartContainer(t.cfg.ImageName+t.cfg.ImageTag, t.cfg.ContainerName)
+	return helper.StartContainer(t.cfg)
 }

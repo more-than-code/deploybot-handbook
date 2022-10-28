@@ -55,13 +55,13 @@ func buildHandler(w http.ResponseWriter, r *http.Request) {
 func deployHandler(w http.ResponseWriter, r *http.Request) {
 	body, _ := io.ReadAll(r.Body)
 
-	var data model.DeployTarget
+	var data model.DeployConfig
 	json.Unmarshal(body, &data)
 
 	log.Printf("%+v", data)
 
 	go func() {
-		t := task.NewDeployTask(&task.DeployConfig{ImageName: data.ImageName, ImageTag: data.ImageTag, ContainerName: data.ContainerName})
+		t := task.NewDeployTask(&data)
 
 		err := t.Start()
 		log.Println(err)

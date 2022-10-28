@@ -8,8 +8,10 @@ import (
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
+	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/docker/client"
 	"github.com/docker/docker/pkg/stdcopy"
+	"github.com/more-than-code/deploybot/model"
 )
 
 type ContainerHelper struct {
@@ -24,8 +26,8 @@ func NewContainerHelper(host string) *ContainerHelper {
 	return &ContainerHelper{cli: cli}
 }
 
-func (c *ContainerHelper) BuildImage(buildContext io.Reader, buidOptions *types.ImageBuildOptions) error {
-	buildResponse, err := c.cli.ImageBuild(context.Background(), buildContext, *buidOptions)
+func (h *ContainerHelper) BuildImage(buildContext io.Reader, buidOptions *types.ImageBuildOptions) error {
+	buildResponse, err := h.cli.ImageBuild(context.Background(), buildContext, *buidOptions)
 
 	if err != nil {
 		return err
@@ -43,8 +45,8 @@ func (c *ContainerHelper) BuildImage(buildContext io.Reader, buidOptions *types.
 	return nil
 }
 
-func (c *ContainerHelper) PushImage(imageTag string, pushOptions *types.ImagePushOptions) error {
-	res, err := c.cli.ImagePush(context.Background(), imageTag, *pushOptions)
+func (h *ContainerHelper) PushImage(imageTag string, pushOptions *types.ImagePushOptions) error {
+	res, err := h.cli.ImagePush(context.Background(), imageTag, *pushOptions)
 
 	if err != nil {
 		return err
@@ -55,27 +57,29 @@ func (c *ContainerHelper) PushImage(imageTag string, pushOptions *types.ImagePus
 	return nil
 }
 
-func (c *ContainerHelper) StartContainer(imageName, containerName string) error {
+func (h *ContainerHelper) StartContainer(cfg *model.DeployConfig) error {
 	ctx := context.Background()
 
-	reader, err := c.cli.ImagePull(ctx, imageName, types.ImagePullOptions{})
+	reader, err := h.cli.ImagePull(ctx, cfg.ImageName, types.ImagePullOptions{})
 	if err != nil {
 		return err
 	}
 	io.Copy(os.Stdout, reader)
 
-	resp, err := c.cli.ContainerCreate(ctx, &container.Config{
-		Image: imageName,
-	}, nil, nil, nil, containerName)
+	resp, err := h.cli.ContainerCreate(ctx, &container.Config{
+		Image: cfg.ImageName,
+	}, &container.HostConfig{
+		Mounts: []mount.Mount{{Source: cfg.MountSource, Target: cfg.MountTarget}},
+	}, nil, nil, cfg.ContainerName)
 	if err != nil {
 		return err
 	}
 
-	if err := c.cli.ContainerStart(ctx, resp.ID, types.ContainerStartOptions{}); err != nil {
+	if err := h.cli.ContainerStart(ctx, resp.ID, types.ContainerStartOptions{}); err != nil {
 		return err
 	}
 
-	statusCh, errCh := c.cli.ContainerWait(ctx, resp.ID, container.WaitConditionNotRunning)
+	statusCh, errCh := h.cli.ContainerWait(ctx, resp.ID, container.WaitConditionNotRunning)
 	var err2 error
 	select {
 	case err := <-errCh:
@@ -86,7 +90,7 @@ func (c *ContainerHelper) StartContainer(imageName, containerName string) error 
 	case <-statusCh:
 	}
 
-	out, err := c.cli.ContainerLogs(ctx, resp.ID, types.ContainerLogsOptions{ShowStdout: true})
+	out, err := h.cli.ContainerLogs(ctx, resp.ID, types.ContainerLogsOptions{ShowStdout: true})
 	if err != nil {
 		return err
 	}
