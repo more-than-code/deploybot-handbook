@@ -80,6 +80,7 @@ func (c *ContainerHelper) StartContainer(imageName, containerName string) error 
 	select {
 	case err := <-errCh:
 		if err != nil {
+			log.Println(err)
 			err2 = err
 		}
 	case <-statusCh:
