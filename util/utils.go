@@ -61,6 +61,7 @@ func CloneRepo(repoName, cloneUrl, username, token string) error {
 		return err
 	}
 
+	log.Println(cloneUrl, username, token)
 	_, err = git.PlainClone(repoName, false, &git.CloneOptions{
 		URL:               cloneUrl,
 		Progress:          os.Stdout,

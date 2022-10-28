@@ -66,7 +66,6 @@ func (c *ContainerHelper) StartContainer(imageName, containerName string) {
 
 	resp, err := c.cli.ContainerCreate(ctx, &container.Config{
 		Image: imageName,
-		// Cmd:   []string{"echo", "hello world"},
 	}, nil, nil, nil, containerName)
 	if err != nil {
 		panic(err)
