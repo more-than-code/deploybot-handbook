@@ -55,12 +55,12 @@ func (c *ContainerHelper) PushImage(imageTag string, pushOptions *types.ImagePus
 	return nil
 }
 
-func (c *ContainerHelper) StartContainer(imageName, containerName string) {
+func (c *ContainerHelper) StartContainer(imageName, containerName string) error {
 	ctx := context.Background()
 
 	reader, err := c.cli.ImagePull(ctx, imageName, types.ImagePullOptions{})
 	if err != nil {
-		panic(err)
+		return err
 	}
 	io.Copy(os.Stdout, reader)
 
@@ -68,26 +68,29 @@ func (c *ContainerHelper) StartContainer(imageName, containerName string) {
 		Image: imageName,
 	}, nil, nil, nil, containerName)
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	if err := c.cli.ContainerStart(ctx, resp.ID, types.ContainerStartOptions{}); err != nil {
-		panic(err)
+		return err
 	}
 
 	statusCh, errCh := c.cli.ContainerWait(ctx, resp.ID, container.WaitConditionNotRunning)
+	var err2 error
 	select {
 	case err := <-errCh:
 		if err != nil {
-			panic(err)
+			err2 = err
 		}
 	case <-statusCh:
 	}
 
 	out, err := c.cli.ContainerLogs(ctx, resp.ID, types.ContainerLogsOptions{ShowStdout: true})
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	stdcopy.StdCopy(os.Stdout, os.Stderr, out)
+
+	return err2
 }

@@ -30,12 +30,13 @@ func main() {
 	username = cfg.RepoUsername
 	token = cfg.RepoToken
 
-	http.HandleFunc("/code_change", deployHandler)
+	http.HandleFunc("/code_changed", buildHandler)
+	http.HandleFunc("/image_built", deployHandler)
 
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
-func deployHandler(w http.ResponseWriter, r *http.Request) {
+func buildHandler(w http.ResponseWriter, r *http.Request) {
 	body, _ := io.ReadAll(r.Body)
 
 	var data model.GitHubHookshot
@@ -44,7 +45,25 @@ func deployHandler(w http.ResponseWriter, r *http.Request) {
 	log.Printf("%+v", data)
 
 	go func() {
-		t := task.NewTask(&task.TaskConfig{RepoCloneUrl: data.Repository.CloneUrl, RepoName: data.Repository.Name, RepoUsername: username, RepoToken: token, ImageTagPrefix: "binartist/"})
-		t.Build()
+		t := task.NewBuildTask(&task.BuildConfig{RepoCloneUrl: data.Repository.CloneUrl, RepoName: data.Repository.Name, RepoUsername: username, RepoToken: token, ImageTagPrefix: "binartist/"})
+
+		err := t.Start()
+		log.Println(err)
+	}()
+}
+
+func deployHandler(w http.ResponseWriter, r *http.Request) {
+	body, _ := io.ReadAll(r.Body)
+
+	var data model.DeployTarget
+	json.Unmarshal(body, &data)
+
+	log.Printf("%+v", data)
+
+	go func() {
+		t := task.NewDeployTask(&task.DeployConfig{ImageName: data.ImageName, ImageTag: data.ImageTag, ContainerName: data.ContainerName})
+
+		err := t.Start()
+		log.Println(err)
 	}()
 }

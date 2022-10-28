@@ -11,7 +11,7 @@ import (
 	"github.com/more-than-code/deploybot/util"
 )
 
-type TaskConfig struct {
+type BuildConfig struct {
 	RepoCloneUrl   string
 	RepoName       string
 	RepoUsername   string
@@ -19,15 +19,15 @@ type TaskConfig struct {
 	ImageTagPrefix string
 }
 
-type Task struct {
-	cfg *TaskConfig
+type BuildTask struct {
+	cfg *BuildConfig
 }
 
-func NewTask(cfg *TaskConfig) *Task {
-	return &Task{cfg: cfg}
+func NewBuildTask(cfg *BuildConfig) *BuildTask {
+	return &BuildTask{cfg: cfg}
 }
 
-func (t *Task) Build() error {
+func (t *BuildTask) Start() error {
 	err := util.CloneRepo(t.cfg.RepoName, t.cfg.RepoCloneUrl, t.cfg.RepoUsername, t.cfg.RepoToken)
 
 	if err != nil {

@@ -94,3 +94,9 @@ type GitHubHookshot struct {
 		Modified []string
 	} `json:"head_commit"`
 }
+
+type DeployTarget struct {
+	ImageName     string
+	ImageTag      string
+	ContainerName string
+}
