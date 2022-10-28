@@ -30,8 +30,8 @@ func main() {
 	username = cfg.RepoUsername
 	token = cfg.RepoToken
 
-	http.HandleFunc("/code_changed", buildHandler)
-	http.HandleFunc("/image_built", deployHandler)
+	http.HandleFunc("/build", buildHandler)
+	http.HandleFunc("/deploy", deployHandler)
 
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
