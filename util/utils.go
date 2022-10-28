@@ -55,14 +55,10 @@ func TarFiles(dir string) (io.Reader, error) {
 }
 
 func CloneRepo(repoName, cloneUrl, username, token string) error {
-	err := os.RemoveAll(repoName)
-
-	if err != nil {
-		return err
-	}
+	defer os.RemoveAll(repoName)
 
 	log.Println(cloneUrl, username, token)
-	_, err = git.PlainClone(repoName, false, &git.CloneOptions{
+	_, err := git.PlainClone(repoName, false, &git.CloneOptions{
 		URL:               cloneUrl,
 		Progress:          os.Stdout,
 		RecurseSubmodules: 1,
