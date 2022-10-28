@@ -28,6 +28,8 @@ func NewBuildTask(cfg *BuildConfig) *BuildTask {
 }
 
 func (t *BuildTask) Start() error {
+	defer os.RemoveAll(t.cfg.RepoName)
+
 	err := util.CloneRepo(t.cfg.RepoName, t.cfg.RepoCloneUrl, t.cfg.RepoUsername, t.cfg.RepoToken)
 
 	if err != nil {

@@ -55,8 +55,6 @@ func TarFiles(dir string) (io.Reader, error) {
 }
 
 func CloneRepo(repoName, cloneUrl, username, token string) error {
-	defer os.RemoveAll(repoName)
-
 	log.Println(cloneUrl, username, token)
 	_, err := git.PlainClone(repoName, false, &git.CloneOptions{
 		URL:               cloneUrl,
