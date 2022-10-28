@@ -103,4 +103,5 @@ type DeployConfig struct {
 	MountTarget   string
 	MountType     string
 	Host          string
+	AutoRemove    bool
 }
