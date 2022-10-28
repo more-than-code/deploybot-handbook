@@ -16,16 +16,17 @@ func NewDeployTask(cfg *model.DeployConfig) *DeployTask {
 }
 
 func (t *DeployTask) Start() error {
-	// path, _ := os.Getwd()
+	path, _ := os.Getwd()
 
-	sourceDir := "data/" + t.cfg.ContainerName
-	err := os.MkdirAll(sourceDir, 0600)
+	sourceDir := path + "/data/" + t.cfg.ContainerName
+	err := os.MkdirAll(sourceDir, 0640)
 
 	if err != nil {
 		return err
 	}
 
 	t.cfg.MountSource = sourceDir
+	t.cfg.MountType = "bind"
 
 	helper := container.NewContainerHelper("unix:///var/run/docker.sock")
 
