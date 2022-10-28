@@ -69,7 +69,7 @@ func (h *ContainerHelper) StartContainer(cfg *model.DeployConfig) error {
 	resp, err := h.cli.ContainerCreate(ctx, &container.Config{
 		Image: cfg.ImageName,
 	}, &container.HostConfig{
-		Mounts: []mount.Mount{{Source: cfg.MountSource, Target: cfg.MountTarget}},
+		Mounts: []mount.Mount{{Source: cfg.MountSource, Target: cfg.MountTarget, Type: mount.Type(cfg.MountType)}},
 	}, nil, nil, cfg.ContainerName)
 	if err != nil {
 		return err

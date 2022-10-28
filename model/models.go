@@ -99,7 +99,8 @@ type DeployConfig struct {
 	ImageName     string
 	ImageTag      string
 	ContainerName string
-	Host          string
 	MountSource   string
 	MountTarget   string
+	MountType     string
+	Host          string
 }
