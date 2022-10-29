@@ -57,7 +57,7 @@ func (h *ContainerHelper) PushImage(imageTag string, pushOptions *types.ImagePus
 	return nil
 }
 
-func (h *ContainerHelper) StartContainer(cfg *model.DeployConfig) error {
+func (h *ContainerHelper) StartContainer(cfg *model.DeployConfigPayload) error {
 	ctx := context.Background()
 
 	reader, err := h.cli.ImagePull(ctx, cfg.ImageName, types.ImagePullOptions{})
@@ -71,7 +71,7 @@ func (h *ContainerHelper) StartContainer(cfg *model.DeployConfig) error {
 	}, &container.HostConfig{
 		AutoRemove: cfg.AutoRemove,
 		Mounts:     []mount.Mount{{Source: cfg.MountSource, Target: cfg.MountTarget, Type: mount.Type(cfg.MountType)}},
-	}, nil, nil, cfg.ContainerName)
+	}, nil, nil, cfg.ServiceName)
 	if err != nil {
 		return err
 	}

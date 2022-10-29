@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"io"
 	"log"
@@ -16,20 +17,7 @@ type Config struct {
 	RepoToken    string `envconfig:"REPO_TOKEN"`
 }
 
-var username string
-var token string
-
 func main() {
-	var cfg Config
-	err := envconfig.Process("", &cfg)
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	username = cfg.RepoUsername
-	token = cfg.RepoToken
-
 	http.HandleFunc("/build", buildHandler)
 	http.HandleFunc("/deploy", deployHandler)
 
@@ -45,23 +33,38 @@ func buildHandler(w http.ResponseWriter, r *http.Request) {
 	log.Printf("%+v", data)
 
 	go func() {
-		t := task.NewBuildTask(&task.BuildConfig{RepoCloneUrl: data.Repository.CloneUrl, RepoName: data.Repository.Name, RepoUsername: username, RepoToken: token, ImageTagPrefix: "binartist/"})
+		var cfg Config
+		err := envconfig.Process("", &cfg)
 
-		err := t.Start()
-		log.Println(err)
+		if err != nil {
+			log.Println(err)
+			return
+		}
+
+		t := task.NewBuilder(&task.BuildConfig{RepoCloneUrl: data.Repository.CloneUrl, RepoName: data.Repository.Name, RepoUsername: cfg.RepoUsername, RepoToken: cfg.RepoToken, ImageTagPrefix: "binartist/"})
+
+		err = t.Start()
+
+		if err != nil {
+			log.Println(err)
+			return
+		}
+
+		s := task.NewScheduler()
+		s.HandleBuildEvent(context.TODO(), &model.Event{Name: "build", Data: data.Repository.Name})
 	}()
 }
 
 func deployHandler(w http.ResponseWriter, r *http.Request) {
 	body, _ := io.ReadAll(r.Body)
 
-	var data model.DeployConfig
+	var data model.DeployConfigPayload
 	json.Unmarshal(body, &data)
 
 	log.Printf("%+v", data)
 
 	go func() {
-		t := task.NewDeployTask(&data)
+		t := task.NewDeployer(&data)
 
 		err := t.Start()
 		log.Println(err)

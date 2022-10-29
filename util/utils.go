@@ -10,6 +10,7 @@ import (
 
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing/transport/http"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 func TarFiles(dir string) (io.Reader, error) {
@@ -71,4 +72,21 @@ func CloneRepo(repoName, cloneUrl, username, token string) error {
 	}
 
 	return nil
+}
+
+func StructToBsonDoc(source interface{}) bson.M {
+	bytes, err := bson.Marshal(source)
+
+	if err != nil {
+		return nil
+	}
+
+	doc := bson.M{}
+	err = bson.Unmarshal(bytes, &doc)
+
+	if err != nil {
+		return nil
+	}
+
+	return doc
 }
