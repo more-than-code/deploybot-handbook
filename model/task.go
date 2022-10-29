@@ -40,3 +40,8 @@ type DeployStatusFilter struct {
 type DeployTasksInput struct {
 	StatusFilter *DeployStatusFilter
 }
+
+type UpdateDeployTaskStatusInput struct {
+	DeployTaskId primitive.ObjectID
+	Status       string
+}

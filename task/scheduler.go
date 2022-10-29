@@ -41,9 +41,15 @@ func (s *Scheduler) HandleBuildEvent(ctx context.Context, e *model.Event) error 
 					},
 				},
 			}
-			s.repo.UpdateDeployTask(ctx, &task)
+			id, err := s.repo.UpdateDeployTask(ctx, &task)
+
+			if err != nil {
+				return err
+			}
 
 			s.DispatchDeployTask(ctx)
+
+			s.repo.UpdateDeployTaskStatus(ctx, &model.UpdateDeployTaskStatusInput{DeployTaskId: id, Status: "DONE"})
 		}
 	}
 
@@ -51,7 +57,7 @@ func (s *Scheduler) HandleBuildEvent(ctx context.Context, e *model.Event) error 
 }
 
 func (s *Scheduler) DispatchDeployTask(ctx context.Context) error {
-	tasks, err := s.repo.GetDeployTasks(ctx, &model.DeployTasksInput{StatusFilter: &model.DeployStatusFilter{Option: "pending"}})
+	tasks, err := s.repo.GetDeployTasks(ctx, &model.DeployTasksInput{StatusFilter: &model.DeployStatusFilter{Option: "PENDING"}})
 
 	if err != nil {
 		return err

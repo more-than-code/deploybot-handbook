@@ -27,7 +27,7 @@ func (r *Repository) UpdateDeployTask(ctx context.Context, input *model.UpdateDe
 	upsert := true
 	opts := options.UpdateOptions{Upsert: &upsert}
 	update := bson.M{"$set": doc}
-	filter := bson.M{"_id": input.Id, "status": "pending"}
+	filter := bson.M{"_id": input.Id, "status": "PENDING"}
 
 	coll := r.mongoClient.Database("pipeline").Collection("deployTasks")
 	result, err := coll.UpdateOne(ctx, filter, update, &opts)
@@ -68,6 +68,13 @@ func (r *Repository) GetDeployTasks(ctx context.Context, input *model.DeployTask
 func (r *Repository) DeleteDeployTasks(ctx context.Context, id primitive.ObjectID) error {
 	coll := r.mongoClient.Database("pipeline").Collection("deployTasks")
 	_, err := coll.DeleteOne(ctx, bson.M{"_id": id})
+
+	return err
+}
+
+func (r *Repository) UpdateDeployTaskStatus(ctx context.Context, input *model.UpdateDeployTaskStatusInput) error {
+	coll := r.mongoClient.Database("pipeline").Collection("deployTasks")
+	_, err := coll.UpdateOne(ctx, bson.M{"_id": input.DeployTaskId, "status": "PENDING"}, bson.M{"status": input.Status})
 
 	return err
 }
