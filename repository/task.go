@@ -73,8 +73,11 @@ func (r *Repository) DeleteDeployTasks(ctx context.Context, id primitive.ObjectI
 }
 
 func (r *Repository) UpdateDeployTaskStatus(ctx context.Context, input *model.UpdateDeployTaskStatusInput) error {
+	filter := bson.M{"_id": input.DeployTaskId, "status": "PENDING"}
+	update := bson.M{"$set": bson.M{"status": input.Status}}
+
 	coll := r.mongoClient.Database("pipeline").Collection("deployTasks")
-	_, err := coll.UpdateOne(ctx, bson.M{"_id": input.DeployTaskId, "status": "PENDING"}, bson.M{"status": input.Status})
+	_, err := coll.UpdateOne(ctx, filter, update)
 
 	return err
 }
