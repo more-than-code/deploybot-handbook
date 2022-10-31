@@ -73,8 +73,8 @@ func (r *Repository) DeleteDeployTasks(ctx context.Context, id primitive.ObjectI
 }
 
 func (r *Repository) UpdateDeployTaskStatus(ctx context.Context, input *model.UpdateDeployTaskStatusInput) error {
-	filter := bson.M{"_id": input.DeployTaskId, "status": model.TaskPending}
-	update := bson.M{"$set": bson.M{"status": bson.M{"$in": bson.A{model.TaskPending, model.TaskInProgress}}}}
+	filter := bson.M{"_id": input.DeployTaskId, "status": bson.M{"$in": bson.A{model.TaskPending, model.TaskInProgress}}}
+	update := bson.M{"$set": bson.M{"status": input.Status}}
 
 	coll := r.mongoClient.Database("pipeline").Collection("deployTasks")
 	_, err := coll.UpdateOne(ctx, filter, update)
@@ -97,7 +97,7 @@ func (r *Repository) UpdateBuildTask(ctx context.Context, input *model.UpdateBui
 	upsert := true
 	opts := options.UpdateOptions{Upsert: &upsert}
 	update := bson.M{"$set": doc}
-	filter := bson.M{"_id": input.Id, "status": bson.M{"$in": bson.A{model.TaskPending, model.TaskInProgress}}}
+	filter := bson.M{"_id": input.Id, "status": model.TaskPending}
 
 	coll := r.mongoClient.Database("pipeline").Collection("buildTasks")
 	result, err := coll.UpdateOne(ctx, filter, update, &opts)
@@ -143,7 +143,7 @@ func (r *Repository) DeleteBuildTasks(ctx context.Context, id primitive.ObjectID
 }
 
 func (r *Repository) UpdateBuildTaskStatus(ctx context.Context, input *model.UpdateBuildTaskStatusInput) error {
-	filter := bson.M{"_id": input.BuildTaskId, "status": model.TaskPending}
+	filter := bson.M{"_id": input.BuildTaskId, "status": bson.M{"$in": bson.A{model.TaskPending, model.TaskInProgress}}}
 	update := bson.M{"$set": bson.M{"status": input.Status}}
 
 	coll := r.mongoClient.Database("pipeline").Collection("buildTasks")
