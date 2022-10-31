@@ -1,44 +1,59 @@
 package task
 
 import (
+	"context"
 	"os"
 	"os/exec"
 
 	"github.com/more-than-code/deploybot/container"
 	"github.com/more-than-code/deploybot/model"
+	"github.com/more-than-code/deploybot/repository"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type Deployer struct {
-	cfg *model.DeployConfigPayload
+	repo *repository.Repository
 }
 
-func NewDeployer(cfg *model.DeployConfigPayload) *Deployer {
-	return &Deployer{cfg: cfg}
+func NewDeployer() *Deployer {
+	r, err := repository.NewRepository()
+	if err != nil {
+		panic(err)
+	}
+	return &Deployer{repo: r}
 }
 
-func (d *Deployer) Start() error {
-	if d.cfg.MountTarget != "" {
+func (d *Deployer) Start(cfg *model.DeployConfigPayload) error {
+	if cfg.MountTarget != "" {
 		path, _ := os.Getwd()
 
-		sourceDir := path + "/data/" + d.cfg.ServiceName
+		sourceDir := path + "/data/" + cfg.ServiceName
 		err := os.MkdirAll(sourceDir, 0644)
 
 		if err != nil {
 			return err
 		}
 
-		d.cfg.MountSource = sourceDir
-		d.cfg.MountType = "bind"
-		d.cfg.AutoRemove = true
+		cfg.MountSource = sourceDir
+		cfg.MountType = "bind"
+		cfg.AutoRemove = true
 	}
 
 	helper := container.NewContainerHelper("unix:///var/run/docker.sock")
 
-	err := helper.StartContainer(d.cfg)
+	err := helper.StartContainer(cfg)
 
-	if d.cfg.MountTarget != "" {
-		cmd := exec.Command("sudo", "chmod", "u+x", "-R", d.cfg.MountSource)
+	if cfg.MountTarget != "" {
+		cmd := exec.Command("sudo", "chmod", "u+x", "-R", cfg.MountSource)
 		err = cmd.Run()
 	}
 	return err
+}
+
+func (d *Deployer) UpdateTask(input *model.UpdateDeployTaskInput) (primitive.ObjectID, error) {
+	return d.repo.UpdateDeployTask(context.TODO(), input)
+}
+
+func (d *Deployer) UpdateTaskStatus(input *model.UpdateDeployTaskStatusInput) error {
+	return d.repo.UpdateDeployTaskStatus(context.TODO(), input)
 }

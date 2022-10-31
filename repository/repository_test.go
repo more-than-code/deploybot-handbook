@@ -12,7 +12,7 @@ func TestGetDeployTasks(t *testing.T) {
 	r, _ := NewRepository()
 
 	tasks, err := r.GetDeployTasks(context.TODO(), &model.DeployTasksInput{
-		StatusFilter: &model.DeployStatusFilter{Option: "PENDING"},
+		StatusFilter: &model.DeployTaskStatusFilter{Option: model.TaskPending},
 	})
 	if err != nil {
 		t.Fatal(err)

@@ -1,6 +1,7 @@
 package task
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
@@ -8,29 +9,28 @@ import (
 
 	"github.com/docker/docker/api/types"
 	"github.com/more-than-code/deploybot/container"
+	"github.com/more-than-code/deploybot/model"
+	"github.com/more-than-code/deploybot/repository"
 	"github.com/more-than-code/deploybot/util"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-type BuildConfig struct {
-	RepoCloneUrl   string
-	RepoName       string
-	RepoUsername   string
-	RepoToken      string
-	ImageTagPrefix string
-}
-
 type Builder struct {
-	cfg *BuildConfig
+	repo *repository.Repository
 }
 
-func NewBuilder(cfg *BuildConfig) *Builder {
-	return &Builder{cfg: cfg}
+func NewBuilder() *Builder {
+	r, err := repository.NewRepository()
+	if err != nil {
+		panic(err)
+	}
+	return &Builder{repo: r}
 }
 
-func (t *Builder) Start() error {
-	defer os.RemoveAll(t.cfg.RepoName)
+func (t *Builder) Start(cfg *model.BuildConfigPayload) error {
+	defer os.RemoveAll(cfg.RepoName)
 
-	err := util.CloneRepo(t.cfg.RepoName, t.cfg.RepoCloneUrl, t.cfg.RepoUsername, t.cfg.RepoToken)
+	err := util.CloneRepo(cfg.RepoName, cfg.RepoCloneUrl, cfg.RepoUsername, cfg.RepoToken)
 
 	if err != nil {
 		return err
@@ -44,13 +44,13 @@ func (t *Builder) Start() error {
 		return err
 	}
 
-	buf, err := util.TarFiles(fmt.Sprintf("%s/%s/", path, t.cfg.RepoName))
+	buf, err := util.TarFiles(fmt.Sprintf("%s/%s/", path, cfg.RepoName))
 
 	if err != nil {
 		return err
 	}
 
-	tag := t.cfg.ImageTagPrefix + t.cfg.RepoName
+	tag := cfg.ImageTagPrefix + cfg.RepoName
 	err = helper.BuildImage(buf, &types.ImageBuildOptions{Tags: []string{tag}})
 
 	if err != nil {
@@ -64,4 +64,12 @@ func (t *Builder) Start() error {
 	log.Printf("Pushing finished with error: %v", err)
 
 	return err
+}
+
+func (b *Builder) UpdateTask(input *model.UpdateBuildTaskInput) (primitive.ObjectID, error) {
+	return b.repo.UpdateBuildTask(context.TODO(), input)
+}
+
+func (b *Builder) UpdateTaskStatus(input *model.UpdateBuildTaskStatusInput) error {
+	return b.repo.UpdateBuildTaskStatus(context.TODO(), input)
 }

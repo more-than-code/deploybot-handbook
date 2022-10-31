@@ -1,7 +1,6 @@
 package task
 
 import (
-	"context"
 	"testing"
 
 	"github.com/more-than-code/deploybot/model"
@@ -9,13 +8,10 @@ import (
 
 func TestHandleEvent(t *testing.T) {
 	s := NewScheduler()
-	err := s.HandleBuildEvent(context.TODO(), &model.Event{Name: "build", Data: "geoy-webapp"})
-	if err != nil {
-		t.Fatal(err)
-	}
-}
+	s.PushEvent(model.Event{Key: "build", Value: "geoy-webapp"})
 
-func TestDispatchDeployTask(t *testing.T) {
-	s := NewScheduler()
-	s.DispatchDeployTask(context.TODO())
+	e := s.PullEvent()
+	if e.Key != "build" {
+		t.Fail()
+	}
 }
