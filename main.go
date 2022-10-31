@@ -10,11 +10,11 @@ import (
 func main() {
 	s := task.NewScheduler()
 
-	http.HandleFunc("/gh_webhook", s.GhWebhookHandler)
-	http.HandleFunc("/build", s.BuildHandler)
-	http.HandleFunc("/postBuild", s.PostBuildHandler)
-	http.HandleFunc("/deploy", s.DeployHandler)
-	http.HandleFunc("/postDeploy", s.PostDeployHandler)
+	http.HandleFunc("/ghWebhook", s.GhWebhookHandler)
+	http.HandleFunc("/pkBuild", s.BuildHandler)
+	http.HandleFunc("/pkPostBuild", s.PostBuildHandler)
+	http.HandleFunc("/pkDeploy", s.DeployHandler)
+	http.HandleFunc("/pkPostDeploy", s.PostDeployHandler)
 
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
