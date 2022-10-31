@@ -23,7 +23,7 @@ func NewDeployer() *Deployer {
 	return &Deployer{repo: r}
 }
 
-func (d *Deployer) Start(cfg *model.DeployConfigPayload) error {
+func (d *Deployer) Start(cfg model.DeployConfigPayload) error {
 	if cfg.MountTarget != "" {
 		path, _ := os.Getwd()
 

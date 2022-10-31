@@ -27,7 +27,7 @@ func NewBuilder() *Builder {
 	return &Builder{repo: r}
 }
 
-func (t *Builder) Start(cfg *model.BuildConfigPayload) error {
+func (t *Builder) Start(cfg model.BuildConfigPayload) error {
 	defer os.RemoveAll(cfg.RepoName)
 
 	err := util.CloneRepo(cfg.RepoName, cfg.RepoCloneUrl, cfg.RepoUsername, cfg.RepoToken)

@@ -14,7 +14,7 @@ type DeployConfigPayload struct {
 
 type DeployConfig struct {
 	Webhook string
-	Payload *DeployConfigPayload
+	Payload DeployConfigPayload
 }
 
 type DeployTask struct {
@@ -26,14 +26,14 @@ type DeployTask struct {
 	StoppedAt   primitive.DateTime
 	ScheduledAt primitive.DateTime
 	Status      string
-	Config      *DeployConfig
+	Config      DeployConfig
 }
 
 type UpdateDeployTaskInput struct {
 	Id          primitive.ObjectID
 	BuildTaskId primitive.ObjectID
 	ScheduledAt primitive.DateTime `bson:",omitempty"`
-	Config      *DeployConfig
+	Config      DeployConfig
 }
 
 type DeployTaskStatusFilter struct {
@@ -59,7 +59,7 @@ type BuildConfigPayload struct {
 
 type BuildConfig struct {
 	Webhook string
-	Payload *BuildConfigPayload
+	Payload BuildConfigPayload
 }
 
 type BuildTask struct {
@@ -70,13 +70,13 @@ type BuildTask struct {
 	StoppedAt   primitive.DateTime
 	ScheduledAt primitive.DateTime
 	Status      string
-	Config      *BuildConfig
+	Config      BuildConfig
 }
 
 type UpdateBuildTaskInput struct {
 	Id          primitive.ObjectID
 	ScheduledAt primitive.DateTime `bson:",omitempty"`
-	Config      *BuildConfig
+	Config      BuildConfig
 }
 
 type UpdateBuildTaskStatusInput struct {

@@ -27,9 +27,9 @@ func TestCreateDeployTask(t *testing.T) {
 	id, _ := primitive.ObjectIDFromHex("635d38a1988fd51e865a5244")
 	task := model.UpdateDeployTaskInput{
 		Id: id,
-		Config: &model.DeployConfig{
+		Config: model.DeployConfig{
 			Webhook: "https://geoy.appsive.com/deploy",
-			Payload: &model.DeployConfigPayload{
+			Payload: model.DeployConfigPayload{
 				ImageName:   "binartist/geoy-webapp",
 				ImageTag:    ":latest",
 				ServiceName: "geoy_webapp",

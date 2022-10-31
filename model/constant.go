@@ -1,10 +1,11 @@
 package model
 
 const (
-	TaskPending  = "Pending"
-	TaskDone     = "Done"
-	TaskCanceled = "Canceled"
-	TaskError    = "Error"
+	TaskPending    = "Pending"
+	TaskInProgress = "InProgress"
+	TaskDone       = "Done"
+	TaskCanceled   = "Canceled"
+	TaskFailed     = "Failed"
 )
 
 const (

@@ -156,7 +156,17 @@ func (s *Scheduler) BuildHandler(w http.ResponseWriter, r *http.Request) {
 	log.Printf("%+v", data)
 
 	go func() {
-		s.builder.Start(data.Config.Payload)
+		s.builder.UpdateTaskStatus(&model.UpdateBuildTaskStatusInput{BuildTaskId: data.Id, Status: model.TaskInProgress})
+		err := s.builder.Start(data.Config.Payload)
+
+		if err != nil {
+			s.builder.UpdateTaskStatus(&model.UpdateBuildTaskStatusInput{BuildTaskId: data.Id, Status: model.TaskFailed})
+			log.Println(err)
+			return
+		}
+
+		s.builder.UpdateTaskStatus(&model.UpdateBuildTaskStatusInput{BuildTaskId: data.Id, Status: model.TaskDone})
+		data.Status = model.TaskDone
 
 		bs, _ := json.Marshal(data)
 		_, _ = http.Post(data.Config.Webhook, "application/json", bytes.NewReader(bs))
@@ -176,7 +186,7 @@ func (s *Scheduler) PostBuildHandler(w http.ResponseWriter, r *http.Request) {
 	case "geoy-webapp":
 		cfg = model.DeployConfig{
 			Webhook: s.cfg.PostDeployWebhook,
-			Payload: &model.DeployConfigPayload{
+			Payload: model.DeployConfigPayload{
 				ImageName:   "binartist/geoy-webapp",
 				ImageTag:    ":latest",
 				ServiceName: "geoy_webapp",
@@ -186,11 +196,14 @@ func (s *Scheduler) PostBuildHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	s.builder.UpdateTaskStatus(&model.UpdateBuildTaskStatusInput{BuildTaskId: data.Id, Status: data.Status})
-	deployTaskId, _ := s.deployer.UpdateTask(&model.UpdateDeployTaskInput{Config: &cfg, BuildTaskId: data.Id})
+	deployTaskId, _ := s.deployer.UpdateTask(&model.UpdateDeployTaskInput{Config: cfg, BuildTaskId: data.Id})
 
-	task, _ := json.Marshal(&model.DeployTask{Id: deployTaskId, BuildTaskId: data.Id, Config: &cfg})
-	_, _ = http.Post(s.cfg.DeployWebhook, "application/json", bytes.NewReader(task))
+	task, _ := json.Marshal(&model.DeployTask{Id: deployTaskId, BuildTaskId: data.Id, Config: cfg})
+	_, err := http.Post(s.cfg.DeployWebhook, "application/json", bytes.NewReader(task))
+
+	if err == nil {
+		s.deployer.UpdateTaskStatus(&model.UpdateDeployTaskStatusInput{DeployTaskId: deployTaskId, Status: model.TaskInProgress})
+	}
 }
 
 func (s *Scheduler) DeployHandler(w http.ResponseWriter, r *http.Request) {
@@ -202,7 +215,14 @@ func (s *Scheduler) DeployHandler(w http.ResponseWriter, r *http.Request) {
 	log.Printf("%+v", data)
 
 	go func() {
-		s.deployer.Start(data.Config.Payload)
+		err := s.deployer.Start(data.Config.Payload)
+
+		if err != nil {
+			log.Println(err)
+			data.Status = model.TaskFailed
+		} else {
+			data.Status = model.TaskDone
+		}
 
 		bs, _ := json.Marshal(data)
 		_, _ = http.Post(data.Config.Webhook, "application/json", bytes.NewReader(bs))
@@ -230,9 +250,9 @@ func (s *Scheduler) GhWebhookHandler(w http.ResponseWriter, r *http.Request) {
 	log.Printf("%+v", data)
 
 	input := &model.UpdateBuildTaskInput{
-		Config: &model.BuildConfig{
+		Config: model.BuildConfig{
 			Webhook: s.cfg.PostBuildWebhook,
-			Payload: &model.BuildConfigPayload{RepoCloneUrl: data.Repository.CloneUrl, RepoName: data.Repository.Name, RepoUsername: s.cfg.RepoUsername, RepoToken: s.cfg.RepoToken, ImageTagPrefix: "binartist/"}}}
+			Payload: model.BuildConfigPayload{RepoCloneUrl: data.Repository.CloneUrl, RepoName: data.Repository.Name, RepoUsername: s.cfg.RepoUsername, RepoToken: s.cfg.RepoToken, ImageTagPrefix: "binartist/"}}}
 
 	buildTaskId, _ := s.builder.UpdateTask(input)
 
