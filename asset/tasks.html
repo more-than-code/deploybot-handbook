@@ -7,7 +7,7 @@
         <li>Executed at: {{.ExecutedAt2Str}}</li>
         <li>Stopped at: {{.StoppedAt2Str}}</li>
         <li><details>
-            <summary>Commits:</summary>
+            <summary>Commits</summary>
             <ul>
                 {{range .Config.SourceConfig.Commits}}
                 <li>ID: {{.Id}}</li>
@@ -36,16 +36,24 @@
     <li>Created at: {{.CreatedAt2Str}}</li>
     <li>Executed at: {{.ExecutedAt2Str}}</li>
     <li>Stopped at: {{.StoppedAt2Str}}</li>
-    <li>Pre-install: {{.Config.PreInstall}}</li>
-    <li>Post-install: {{.Config.PostInstall}}</li>
-    <li>Container config:
-        <ul>
-            <li>Image name: {{.Config.ContainerConfig.ImageName}}</li>
-            <li>Image tag: {{.Config.ContainerConfig.ImageTag}}</li>
-            <li>Service name: {{.Config.ContainerConfig.ServiceName}}</li>
-            <li>Mounts: {{.Config.ContainerConfig.Mounts}}</li>
-            <li>Auto remove: {{.Config.ContainerConfig.AutoRemove}}</li>
-        </ul>
+    <li>
+        <details>
+            <summary>Config</summary>
+            <ul>
+                <li>Pre-install: {{.Config.PreInstall}}</li>
+                <li>Post-install: {{.Config.PostInstall}}</li>
+                <li>Container config:
+                    <ul>
+                        <li>Image name: {{.Config.ContainerConfig.ImageName}}</li>
+                        <li>Image tag: {{.Config.ContainerConfig.ImageTag}}</li>
+                        <li>Service name: {{.Config.ContainerConfig.ServiceName}}</li>
+                        <li>Mounts: {{.Config.ContainerConfig.Mounts}}</li>
+                        <li>Auto remove: {{.Config.ContainerConfig.AutoRemove}}</li>
+                    </ul>
+                </li>
+            </ul>
+        </details>
+        
     </li>
     <br>
 {{end}}
