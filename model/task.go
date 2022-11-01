@@ -31,6 +31,14 @@ type DeployTask struct {
 	Config      DeployConfig
 }
 
+func (d DeployTask) Id2Hex() string {
+	return d.Id.Hex()
+}
+
+func (d DeployTask) BuildTaskId2Hex() string {
+	return d.BuildTaskId.Hex()
+}
+
 type UpdateDeployTaskInput struct {
 	Id          primitive.ObjectID
 	BuildTaskId primitive.ObjectID

@@ -1,7 +1,7 @@
 <h1>{{.Title1}}</h1>
 <ul>
     {{range .BuildTasks}}
-        <li id="{{.Id}}"><b>ID: {{.Id2Hex()}}</b></li>
+        <li id="{{.Id2Hex}}"><b>ID: {{.Id2Hex}}</b></li>
         <li>Status: {{.Status}}</li>
         <li>Commits:
             <ul>
@@ -27,8 +27,8 @@
 <h1>{{.Title2}}</h1>
 <ul>
     {{range .DeployTasks}}
-    <li><b>ID: {{.Id}}</b></li>
-    <li>Build task ID: <a  href="#{{.BuildTaskId}}">{{.BuildTaskId}}</a></li>
+    <li><b>ID: {{.Id2Hex}}</b></li>
+    <li>Build task ID: <a  href="#{{.BuildTaskId2Hex}}">{{.BuildTaskId2Hex}}</a></li>
     <li>Status: {{.Status}}</li>
     <li>Pre-install: {{.Config.PreInstall}}</li>
     <li>Post-install: {{.Config.PostInstall}}</li>
