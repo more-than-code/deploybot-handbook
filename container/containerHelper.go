@@ -10,7 +10,6 @@ import (
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/docker/client"
-	"github.com/docker/docker/pkg/stdcopy"
 	"github.com/more-than-code/deploybot/model"
 )
 
@@ -80,23 +79,23 @@ func (h *ContainerHelper) StartContainer(cfg *model.ContainerConfig) error {
 		return err
 	}
 
-	statusCh, errCh := h.cli.ContainerWait(ctx, resp.ID, container.WaitConditionNotRunning)
-	var err2 error
-	select {
-	case err := <-errCh:
-		if err != nil {
-			log.Println(err)
-			err2 = err
-		}
-	case <-statusCh:
-	}
+	// statusCh, errCh := h.cli.ContainerWait(ctx, resp.ID, container.WaitConditionNotRunning)
+	// var err2 error
+	// select {
+	// case err := <-errCh:
+	// 	if err != nil {
+	// 		log.Println(err)
+	// 		err2 = err
+	// 	}
+	// case <-statusCh:
+	// }
 
-	out, err := h.cli.ContainerLogs(ctx, resp.ID, types.ContainerLogsOptions{ShowStdout: true})
-	if err != nil {
-		return err
-	}
+	// out, err := h.cli.ContainerLogs(ctx, resp.ID, types.ContainerLogsOptions{ShowStdout: true})
+	// if err != nil {
+	// 	return err
+	// }
 
-	stdcopy.StdCopy(os.Stdout, os.Stderr, out)
+	// stdcopy.StdCopy(os.Stdout, os.Stderr, out)
 
-	return err2
+	return nil
 }

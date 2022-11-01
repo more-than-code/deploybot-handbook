@@ -33,16 +33,12 @@ func (d *Deployer) Start(cfg model.DeployConfig) error {
 			sourceDir := path + "/data/" + cfg.ContainerConfig.ServiceName
 			// err := os.MkdirAll(sourceDir, 0644)
 
-			cmd := exec.Command("sudo", "mkdir", sourceDir)
-			output, err := cmd.Output()
-			log.Println(string(output))
-			if err != nil {
-				return err
-			}
-
-			if err != nil {
-				return err
-			}
+			// cmd := exec.Command("sudo", "mkdir", sourceDir)
+			// output, err := cmd.Output()
+			// log.Println(string(output))
+			// if err != nil {
+			// 	return err
+			// }
 
 			cfg.ContainerConfig.MountSource = sourceDir
 			cfg.ContainerConfig.MountType = "bind"
