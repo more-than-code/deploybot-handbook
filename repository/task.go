@@ -79,9 +79,7 @@ func (r *Repository) UpdateDeployTaskStatus(ctx context.Context, input *model.Up
 	switch input.Status {
 	case model.TaskInProgress:
 		doc["executedat"] = primitive.NewDateTimeFromTime(time.Now().UTC())
-	case model.TaskDone:
-	case model.TaskFailed:
-	case model.TaskCanceled:
+	case model.TaskDone, model.TaskFailed, model.TaskCanceled:
 		doc["stoppedat"] = primitive.NewDateTimeFromTime(time.Now().UTC())
 	}
 
@@ -160,9 +158,7 @@ func (r *Repository) UpdateBuildTaskStatus(ctx context.Context, input *model.Upd
 	switch input.Status {
 	case model.TaskInProgress:
 		doc["executedat"] = primitive.NewDateTimeFromTime(time.Now().UTC())
-	case model.TaskDone:
-	case model.TaskFailed:
-	case model.TaskCanceled:
+	case model.TaskDone, model.TaskFailed, model.TaskCanceled:
 		doc["stoppedat"] = primitive.NewDateTimeFromTime(time.Now().UTC())
 	}
 
