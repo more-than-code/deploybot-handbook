@@ -31,7 +31,14 @@ func (d *Deployer) Start(cfg model.DeployConfig) error {
 			path, _ := os.Getwd()
 
 			sourceDir := path + "/data/" + cfg.ContainerConfig.ServiceName
-			err := os.MkdirAll(sourceDir, 0644)
+			// err := os.MkdirAll(sourceDir, 0644)
+
+			cmd := exec.Command("sudo", "mkdir", sourceDir)
+			output, err := cmd.Output()
+			log.Println(string(output))
+			if err != nil {
+				return err
+			}
 
 			if err != nil {
 				return err
