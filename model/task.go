@@ -2,7 +2,7 @@ package model
 
 import "go.mongodb.org/mongo-driver/bson/primitive"
 
-type DeployConfigPayload struct {
+type ContainerConfig struct {
 	ImageName   string
 	ImageTag    string `bson:",omitempty"`
 	ServiceName string `bson:",omitempty"`
@@ -13,8 +13,10 @@ type DeployConfigPayload struct {
 }
 
 type DeployConfig struct {
-	Webhook string
-	Payload DeployConfigPayload
+	Webhook         string
+	PreInstall      string
+	ContainerConfig *ContainerConfig
+	PostInstall     string
 }
 
 type DeployTask struct {
@@ -49,7 +51,7 @@ type UpdateDeployTaskStatusInput struct {
 	Status       string
 }
 
-type BuildConfigPayload struct {
+type SourceConfig struct {
 	RepoCloneUrl   string
 	RepoName       string
 	RepoUsername   string `bson:",omitempty"`
@@ -58,8 +60,8 @@ type BuildConfigPayload struct {
 }
 
 type BuildConfig struct {
-	Webhook string
-	Payload BuildConfigPayload
+	Webhook      string
+	SourceConfig SourceConfig
 }
 
 type BuildTask struct {

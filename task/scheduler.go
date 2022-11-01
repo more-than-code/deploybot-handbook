@@ -81,7 +81,7 @@ func (s *Scheduler) ProcessBuildTasks() {
 
 	for _, t := range tasks {
 		go func(t2 *model.BuildTask) {
-			err := s.builder.Start(t2.Config.Payload)
+			err := s.builder.Start(t2.Config.SourceConfig)
 
 			if err != nil {
 				log.Println(err)
@@ -106,7 +106,7 @@ func (s *Scheduler) ProcessDeployTasks() {
 
 	for _, t := range tasks {
 		go func(t2 *model.DeployTask) {
-			err := s.deployer.Start(t2.Config.Payload)
+			err := s.deployer.Start(t2.Config)
 
 			if err != nil {
 				log.Println(err)
@@ -157,7 +157,7 @@ func (s *Scheduler) BuildHandler(w http.ResponseWriter, r *http.Request) {
 
 	go func() {
 		s.builder.UpdateTaskStatus(&model.UpdateBuildTaskStatusInput{BuildTaskId: data.Id, Status: model.TaskInProgress})
-		err := s.builder.Start(data.Config.Payload)
+		err := s.builder.Start(data.Config.SourceConfig)
 
 		if err != nil {
 			s.builder.UpdateTaskStatus(&model.UpdateBuildTaskStatusInput{BuildTaskId: data.Id, Status: model.TaskFailed})
@@ -182,11 +182,12 @@ func (s *Scheduler) PostBuildHandler(w http.ResponseWriter, r *http.Request) {
 	log.Printf("%+v", data)
 
 	var cfg model.DeployConfig
-	switch data.Config.Payload.RepoName {
+	switch data.Config.SourceConfig.RepoName {
 	case "geoy-webapp":
 		cfg = model.DeployConfig{
-			Webhook: s.cfg.PostDeployWebhook,
-			Payload: model.DeployConfigPayload{
+			Webhook:     s.cfg.PostDeployWebhook,
+			PostInstall: "docker restart swag",
+			ContainerConfig: &model.ContainerConfig{
 				ImageName:   "binartist/geoy-webapp",
 				ImageTag:    ":latest",
 				ServiceName: "geoy_webapp",
@@ -215,7 +216,7 @@ func (s *Scheduler) DeployHandler(w http.ResponseWriter, r *http.Request) {
 	log.Printf("%+v", data)
 
 	go func() {
-		err := s.deployer.Start(data.Config.Payload)
+		err := s.deployer.Start(data.Config)
 
 		if err != nil {
 			log.Println(err)
@@ -251,8 +252,8 @@ func (s *Scheduler) GhWebhookHandler(w http.ResponseWriter, r *http.Request) {
 
 	input := &model.UpdateBuildTaskInput{
 		Config: model.BuildConfig{
-			Webhook: s.cfg.PostBuildWebhook,
-			Payload: model.BuildConfigPayload{RepoCloneUrl: data.Repository.CloneUrl, RepoName: data.Repository.Name, RepoUsername: s.cfg.RepoUsername, RepoToken: s.cfg.RepoToken, ImageTagPrefix: "binartist/"}}}
+			Webhook:      s.cfg.PostBuildWebhook,
+			SourceConfig: model.SourceConfig{RepoCloneUrl: data.Repository.CloneUrl, RepoName: data.Repository.Name, RepoUsername: s.cfg.RepoUsername, RepoToken: s.cfg.RepoToken, ImageTagPrefix: "binartist/"}}}
 
 	buildTaskId, _ := s.builder.UpdateTask(input)
 

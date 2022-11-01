@@ -2,8 +2,10 @@ package task
 
 import (
 	"context"
+	"log"
 	"os"
 	"os/exec"
+	"strings"
 
 	"github.com/more-than-code/deploybot/container"
 	"github.com/more-than-code/deploybot/model"
@@ -23,31 +25,49 @@ func NewDeployer() *Deployer {
 	return &Deployer{repo: r}
 }
 
-func (d *Deployer) Start(cfg model.DeployConfigPayload) error {
-	if cfg.MountTarget != "" {
-		path, _ := os.Getwd()
+func (d *Deployer) Start(cfg model.DeployConfig) error {
+	if cfg.ContainerConfig != nil {
+		if cfg.ContainerConfig.MountTarget != "" {
+			path, _ := os.Getwd()
 
-		sourceDir := path + "/data/" + cfg.ServiceName
-		err := os.MkdirAll(sourceDir, 0644)
+			sourceDir := path + "/data/" + cfg.ContainerConfig.ServiceName
+			err := os.MkdirAll(sourceDir, 0644)
+
+			if err != nil {
+				return err
+			}
+
+			cfg.ContainerConfig.MountSource = sourceDir
+			cfg.ContainerConfig.MountType = "bind"
+			cfg.ContainerConfig.AutoRemove = true
+		}
+
+		helper := container.NewContainerHelper("unix:///var/run/docker.sock")
+
+		err := helper.StartContainer(cfg.ContainerConfig)
 
 		if err != nil {
 			return err
 		}
 
-		cfg.MountSource = sourceDir
-		cfg.MountType = "bind"
-		cfg.AutoRemove = true
+		if cfg.ContainerConfig.MountTarget != "" {
+			if err = exec.Command("sudo", "chmod", "u+x", "-R", cfg.ContainerConfig.MountSource).Run(); err != nil {
+				return err
+			}
+		}
 	}
 
-	helper := container.NewContainerHelper("unix:///var/run/docker.sock")
-
-	err := helper.StartContainer(cfg)
-
-	if cfg.MountTarget != "" {
-		cmd := exec.Command("sudo", "chmod", "u+x", "-R", cfg.MountSource)
-		err = cmd.Run()
+	if cfg.PostInstall != "" {
+		strs := strings.Split(cfg.PostInstall, " ")
+		cmd := exec.Command(strs[0], strs[1:]...)
+		output, err := cmd.Output()
+		log.Println(string(output))
+		if err != nil {
+			return err
+		}
 	}
-	return err
+
+	return nil
 }
 
 func (d *Deployer) UpdateTask(input *model.UpdateDeployTaskInput) (primitive.ObjectID, error) {

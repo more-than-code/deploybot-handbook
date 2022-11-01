@@ -29,7 +29,7 @@ func TestCreateDeployTask(t *testing.T) {
 		Id: id,
 		Config: model.DeployConfig{
 			Webhook: "https://geoy.appsive.com/deploy",
-			Payload: model.DeployConfigPayload{
+			ContainerConfig: &model.ContainerConfig{
 				ImageName:   "binartist/geoy-webapp",
 				ImageTag:    ":latest",
 				ServiceName: "geoy_webapp",

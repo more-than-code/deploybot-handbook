@@ -57,7 +57,7 @@ func (h *ContainerHelper) PushImage(imageTag string, pushOptions *types.ImagePus
 	return nil
 }
 
-func (h *ContainerHelper) StartContainer(cfg model.DeployConfigPayload) error {
+func (h *ContainerHelper) StartContainer(cfg *model.ContainerConfig) error {
 	ctx := context.Background()
 
 	reader, err := h.cli.ImagePull(ctx, cfg.ImageName, types.ImagePullOptions{})
