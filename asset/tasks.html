@@ -22,6 +22,7 @@
 <ul>
     {{range .DeployTasks}}
     <li>ID: {{.Id}}</li>
+    <li>Build task ID: {{.BuildTaskId}}</li>
     <li>Status: {{.Status}}</li>
     <li>Pre-install: {{.Config.PreInstall}}</li>
     <li>Post-install: {{.Config.PostInstall}}</li>
@@ -31,7 +32,7 @@
             <li>Image tag: {{.Config.ContainerConfig.ImageTag}}</li>
             <li>Service name: {{.Config.ContainerConfig.ServiceName}}</li>
             <li>Mount target: {{.Config.ContainerConfig.MountTarget}}</li>
-            <li>Auto remove: {{.Config.ContainerConfig.Autoremove}}</li>
+            <li>Auto remove: {{.Config.ContainerConfig.AutoRemove}}</li>
         </ul>
     </li>
 {{end}}
