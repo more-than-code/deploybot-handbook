@@ -3,6 +3,9 @@
     {{range .BuildTasks}}
         <li id="{{.Id2Hex}}"><b>ID: {{.Id2Hex}}</b></li>
         <li>Status: {{.Status}}</li>
+        <li>Created at: {{.CreatedAt2Str}}</li>
+        <li>Executed at: {{.ExecutedAt2Str}}</li>
+        <li>Stopped at: {{.StoppedAt2Str}}</li>
         <li>Commits:
             <ul>
                 {{range .Config.SourceConfig.Commits}}
@@ -28,6 +31,9 @@
     <li><b>ID: {{.Id2Hex}}</b></li>
     <li>Build task ID: <a  href="#{{.BuildTaskId2Hex}}">{{.BuildTaskId2Hex}}</a></li>
     <li>Status: {{.Status}}</li>
+    <li>Created at: {{.CreatedAt2Str}}</li>
+    <li>Executed at: {{.ExecutedAt2Str}}</li>
+    <li>Stopped at: {{.StoppedAt2Str}}</li>
     <li>Pre-install: {{.Config.PreInstall}}</li>
     <li>Post-install: {{.Config.PostInstall}}</li>
     <li>ContainerConfig:

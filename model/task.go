@@ -31,12 +31,24 @@ type DeployTask struct {
 	Config      DeployConfig
 }
 
-func (d DeployTask) Id2Hex() string {
-	return d.Id.Hex()
+func (t DeployTask) Id2Hex() string {
+	return t.Id.Hex()
 }
 
-func (d DeployTask) BuildTaskId2Hex() string {
-	return d.BuildTaskId.Hex()
+func (t DeployTask) BuildTaskId2Hex() string {
+	return t.BuildTaskId.Hex()
+}
+
+func (t DeployTask) CreatedAt2Str() string {
+	return t.CreatedAt.Time().String()
+}
+
+func (t DeployTask) ExecutedAt2Str() string {
+	return t.ExecutedAt.Time().String()
+}
+
+func (t DeployTask) StoppedAt2Str() string {
+	return t.StoppedAt.Time().String()
 }
 
 type UpdateDeployTaskInput struct {
@@ -86,6 +98,18 @@ type BuildTask struct {
 
 func (t BuildTask) Id2Hex() string {
 	return t.Id.Hex()
+}
+
+func (t BuildTask) CreatedAt2Str() string {
+	return t.CreatedAt.Time().String()
+}
+
+func (t BuildTask) ExecutedAt2Str() string {
+	return t.ExecutedAt.Time().String()
+}
+
+func (t BuildTask) StoppedAt2Str() string {
+	return t.StoppedAt.Time().String()
 }
 
 type UpdateBuildTaskInput struct {
