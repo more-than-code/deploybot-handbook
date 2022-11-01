@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/docker/docker/api/types/mount"
 	"github.com/kelseyhightower/envconfig"
 	"github.com/more-than-code/deploybot/model"
 )
@@ -186,12 +187,13 @@ func (s *Scheduler) PostBuildHandler(w http.ResponseWriter, r *http.Request) {
 	case "geoy-webapp":
 		cfg = model.DeployConfig{
 			Webhook:     s.cfg.PostDeployWebhook,
+			PreInstall:  "sudo mkdir -p /var/appdata/geoy_webapp",
 			PostInstall: "docker restart swag",
 			ContainerConfig: &model.ContainerConfig{
 				ImageName:   "binartist/geoy-webapp",
 				ImageTag:    ":latest",
 				ServiceName: "geoy_webapp",
-				MountTarget: "/var/www",
+				Mounts:      []mount.Mount{{Target: "/var/www", Source: "/var/appdata/geoy_webapp", Type: "bind"}},
 				AutoRemove:  true,
 			},
 		}

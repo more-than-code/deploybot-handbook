@@ -26,20 +26,14 @@ func NewDeployer() *Deployer {
 
 func (d *Deployer) Start(cfg model.DeployConfig) error {
 	if cfg.ContainerConfig != nil {
-		if cfg.ContainerConfig.MountTarget != "" {
-			sourceDir := "/var/appdata/" + cfg.ContainerConfig.ServiceName
-			// err := os.MkdirAll(sourceDir, 0644)
-
-			// cmd := exec.Command("sudo", "mkdir", sourceDir)
-			// output, err := cmd.Output()
-			// log.Println(string(output))
-			// if err != nil {
-			// 	return err
-			// }
-
-			cfg.ContainerConfig.MountSource = sourceDir
-			cfg.ContainerConfig.MountType = "bind"
-			cfg.ContainerConfig.AutoRemove = true
+		if cfg.PreInstall != "" {
+			strs := strings.Split(cfg.PreInstall, " ")
+			cmd := exec.Command(strs[0], strs[1:]...)
+			output, err := cmd.Output()
+			log.Println(string(output))
+			if err != nil {
+				return err
+			}
 		}
 
 		helper := container.NewContainerHelper("unix:///var/run/docker.sock")
@@ -49,15 +43,6 @@ func (d *Deployer) Start(cfg model.DeployConfig) error {
 		if err != nil {
 			return err
 		}
-
-		// if cfg.ContainerConfig.MountSource != "" {
-		// 	cmd := exec.Command("sudo", "chmod", "u+x", "-R", cfg.ContainerConfig.MountSource)
-		// 	output, err := cmd.Output()
-		// 	log.Println(string(output))
-		// 	if err != nil {
-		// 		return err
-		// 	}
-		// }
 	}
 
 	if cfg.PostInstall != "" {

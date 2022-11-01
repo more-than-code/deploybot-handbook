@@ -1,15 +1,16 @@
 package model
 
-import "go.mongodb.org/mongo-driver/bson/primitive"
+import (
+	"github.com/docker/docker/api/types/mount"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+)
 
 type ContainerConfig struct {
 	ImageName   string
-	ImageTag    string `bson:",omitempty"`
-	ServiceName string `bson:",omitempty"`
-	MountSource string `bson:",omitempty"`
-	MountTarget string `bson:",omitempty"`
-	MountType   string `bson:",omitempty"`
-	AutoRemove  bool   `bson:",omitempty"`
+	ImageTag    string        `bson:",omitempty"`
+	ServiceName string        `bson:",omitempty"`
+	Mounts      []mount.Mount `bson:",omitempty"`
+	AutoRemove  bool          `bson:",omitempty"`
 }
 
 type DeployConfig struct {

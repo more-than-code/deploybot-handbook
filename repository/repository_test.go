@@ -33,7 +33,6 @@ func TestCreateDeployTask(t *testing.T) {
 				ImageName:   "binartist/geoy-webapp",
 				ImageTag:    ":latest",
 				ServiceName: "geoy_webapp",
-				MountTarget: "/var/www",
 				AutoRemove:  true,
 			},
 		},

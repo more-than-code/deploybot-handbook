@@ -8,7 +8,6 @@ import (
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
-	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/docker/client"
 	"github.com/more-than-code/deploybot/model"
 )
@@ -69,7 +68,7 @@ func (h *ContainerHelper) StartContainer(cfg *model.ContainerConfig) error {
 		Image: cfg.ImageName,
 	}, &container.HostConfig{
 		AutoRemove: cfg.AutoRemove,
-		Mounts:     []mount.Mount{{Source: cfg.MountSource, Target: cfg.MountTarget, Type: mount.Type(cfg.MountType)}},
+		Mounts:     cfg.Mounts,
 	}, nil, nil, cfg.ServiceName)
 	if err != nil {
 		return err
