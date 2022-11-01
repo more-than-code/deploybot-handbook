@@ -1,8 +1,16 @@
 <h1>{{.Title1}}</h1>
 <ul>
     {{range .BuildTasks}}
-        <li>{{.Id}}
-            <span>{{.Log}}</span>
+        <li>ID: {{.Id}}</li>
+        <li>Status: {{.Status}}</li>
+        <li>
+            <ul>Commits: 
+                {{range .Config.SourceConfig.Commits}}
+                <li>ID: {{.Id}}</li>
+                <li>Message: {{.Message}}</li>
+                <li>Timestamp: {{.Timestamp}}</li>
+                {{end}}
+            </ul>
         </li>
     {{end}}
 </ul>
@@ -10,7 +18,7 @@
 <ul>
     {{range .DeployTasks}}
         <li>{{.Id}}
-            <span>{{.Log}}</span>
+            <span>{{.Details}}</span>
         </li>
     {{end}}
 </ul>

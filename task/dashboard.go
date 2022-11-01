@@ -8,16 +8,11 @@ import (
 	"github.com/more-than-code/deploybot/model"
 )
 
-type TaskInfo struct {
-	Id  string
-	Log interface{}
-}
-
 type TaskCollection struct {
 	Title1      string
-	BuildTasks  []TaskInfo
+	BuildTasks  []*model.BuildTask
 	Title2      string
-	DeployTasks []TaskInfo
+	DeployTasks []*model.DeployTask
 }
 
 type Dashboard struct {
@@ -32,18 +27,10 @@ func NewDashboard() *Dashboard {
 func (d *Dashboard) DashboardHandler(w http.ResponseWriter, r *http.Request) {
 	bTasks, _ := d.builder.repo.GetBuildTasks(context.TODO(), model.BuildTasksInput{})
 	dTasks, _ := d.deployer.repo.GetDeployTasks(context.TODO(), model.DeployTasksInput{})
-	bTaskInfos := []TaskInfo{}
-	dTaskInfos := []TaskInfo{}
 
-	for _, t := range bTasks {
-		bTaskInfos = append(bTaskInfos, TaskInfo{Id: t.Id.Hex(), Log: t})
-	}
-
-	for _, t := range dTasks {
-		dTaskInfos = append(dTaskInfos, TaskInfo{Id: t.Id.Hex(), Log: t})
-	}
+	coll := TaskCollection{Title1: "Build Tasks", Title2: "Deploy Tasks", BuildTasks: bTasks, DeployTasks: dTasks}
 
 	tmpl := template.Must(template.ParseFiles("asset/tasks.html"))
 
-	tmpl.Execute(w, TaskCollection{Title1: "Build Tasks", Title2: "Deploy Tasks", BuildTasks: bTaskInfos, DeployTasks: dTaskInfos})
+	tmpl.Execute(w, coll)
 }
