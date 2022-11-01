@@ -74,7 +74,18 @@ func (r *Repository) DeleteDeployTasks(ctx context.Context, id primitive.ObjectI
 
 func (r *Repository) UpdateDeployTaskStatus(ctx context.Context, input *model.UpdateDeployTaskStatusInput) error {
 	filter := bson.M{"_id": input.DeployTaskId, "status": bson.M{"$in": bson.A{model.TaskPending, model.TaskInProgress}}}
-	update := bson.M{"$set": bson.M{"status": input.Status}}
+
+	doc := bson.M{"status": input.Status}
+	switch input.Status {
+	case model.TaskInProgress:
+		doc["executedat"] = primitive.NewDateTimeFromTime(time.Now().UTC())
+	case model.TaskDone:
+	case model.TaskFailed:
+	case model.TaskCanceled:
+		doc["stoppedat"] = primitive.NewDateTimeFromTime(time.Now().UTC())
+	}
+
+	update := bson.M{"$set": doc}
 
 	coll := r.mongoClient.Database("pipeline").Collection("deployTasks")
 	_, err := coll.UpdateOne(ctx, filter, update)
@@ -144,7 +155,18 @@ func (r *Repository) DeleteBuildTasks(ctx context.Context, id primitive.ObjectID
 
 func (r *Repository) UpdateBuildTaskStatus(ctx context.Context, input *model.UpdateBuildTaskStatusInput) error {
 	filter := bson.M{"_id": input.BuildTaskId, "status": bson.M{"$in": bson.A{model.TaskPending, model.TaskInProgress}}}
-	update := bson.M{"$set": bson.M{"status": input.Status}}
+
+	doc := bson.M{"status": input.Status}
+	switch input.Status {
+	case model.TaskInProgress:
+		doc["executedat"] = primitive.NewDateTimeFromTime(time.Now().UTC())
+	case model.TaskDone:
+	case model.TaskFailed:
+	case model.TaskCanceled:
+		doc["stoppedat"] = primitive.NewDateTimeFromTime(time.Now().UTC())
+	}
+
+	update := bson.M{"$set": doc}
 
 	coll := r.mongoClient.Database("pipeline").Collection("buildTasks")
 	_, err := coll.UpdateOne(ctx, filter, update)
