@@ -3,12 +3,16 @@
     {{range .BuildTasks}}
         <li>ID: {{.Id}}</li>
         <li>Status: {{.Status}}</li>
-        <li>
-            <ul>Commits: 
+        <li>Commits:
+            <ul>
                 {{range .Config.SourceConfig.Commits}}
                 <li>ID: {{.Id}}</li>
                 <li>Message: {{.Message}}</li>
                 <li>Timestamp: {{.Timestamp}}</li>
+                <li>URL: <a href="{{.Url}}">{{.Url}}</a></li>
+                <li>Committer: <br>name: {{.Committer.Name}} <br> email: {{.Committer.Email}} <br>username: {{.Committer.Username}}</li>
+                <li>URL: {{.Url}}</li>
+                <li>URL: {{.Url}}</li>
                 {{end}}
             </ul>
         </li>
@@ -17,8 +21,18 @@
 <h1>{{.Title2}}</h1>
 <ul>
     {{range .DeployTasks}}
-        <li>{{.Id}}
-            <span>{{.Details}}</span>
-        </li>
-    {{end}}
+    <li>ID: {{.Id}}</li>
+    <li>Status: {{.Status}}</li>
+    <li>Pre-install: {{.Config.PreInstall}}</li>
+    <li>Post-install: {{.Config.PostInstall}}</li>
+    <li>ContainerConfig:
+        <ul>
+            <li>Image name: {{.Config.ContainerConfig.ImageName}}</li>
+            <li>Image tag: {{.Config.ContainerConfig.ImageTag}}</li>
+            <li>Service name: {{.Config.ContainerConfig.ServiceName}}</li>
+            <li>Mount target: {{.Config.ContainerConfig.MountTarget}}</li>
+            <li>Auto remove: {{.Config.ContainerConfig.Autoremove}}</li>
+        </ul>
+    </li>
+{{end}}
 </ul>

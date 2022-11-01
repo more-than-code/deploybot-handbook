@@ -12,8 +12,9 @@ type Commit struct {
 		Email string
 	}
 	Committer struct {
-		Name  string
-		Email string
+		Name     string
+		Email    string
+		Username string
 	}
 	Added    []string
 	Removed  []string
