@@ -6,7 +6,8 @@
         <li>Created at: {{.CreatedAt2Str}}</li>
         <li>Executed at: {{.ExecutedAt2Str}}</li>
         <li>Stopped at: {{.StoppedAt2Str}}</li>
-        <li>Commits:
+        <li><details>
+            <summary>Commits:</summary>
             <ul>
                 {{range .Config.SourceConfig.Commits}}
                 <li>ID: {{.Id}}</li>
@@ -21,6 +22,7 @@
                     </ul>
                 {{end}}
             </ul>
+            </details>
         </li>
     <br>
     {{end}}
