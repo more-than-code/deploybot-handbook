@@ -36,12 +36,12 @@
     <li>Stopped at: {{.StoppedAt2Str}}</li>
     <li>Pre-install: {{.Config.PreInstall}}</li>
     <li>Post-install: {{.Config.PostInstall}}</li>
-    <li>ContainerConfig:
+    <li>Container config:
         <ul>
             <li>Image name: {{.Config.ContainerConfig.ImageName}}</li>
             <li>Image tag: {{.Config.ContainerConfig.ImageTag}}</li>
             <li>Service name: {{.Config.ContainerConfig.ServiceName}}</li>
-            <li>Mount target: {{.Config.ContainerConfig.MountTarget}}</li>
+            <li>Mounts: {{.Config.ContainerConfig.Mounts}}</li>
             <li>Auto remove: {{.Config.ContainerConfig.AutoRemove}}</li>
         </ul>
     </li>
