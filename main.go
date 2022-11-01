@@ -16,5 +16,8 @@ func main() {
 	http.HandleFunc("/pkDeploy", s.DeployHandler)
 	http.HandleFunc("/pkPostDeploy", s.PostDeployHandler)
 
+	d := task.NewDashboard()
+	http.HandleFunc("/", d.DashboardHandler)
+
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
