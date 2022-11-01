@@ -76,6 +76,10 @@ type BuildTask struct {
 	Config      BuildConfig
 }
 
+func (t BuildTask) Id2Hex() string {
+	return t.Id.Hex()
+}
+
 type UpdateBuildTaskInput struct {
 	Id          primitive.ObjectID
 	ScheduledAt primitive.DateTime `bson:",omitempty"`

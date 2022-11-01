@@ -1,7 +1,7 @@
 <h1>{{.Title1}}</h1>
 <ul>
     {{range .BuildTasks}}
-        <li>ID: {{.Id}}</li>
+        <li id="{{.Id}}"><b>ID: {{.Id2Hex()}}</b></li>
         <li>Status: {{.Status}}</li>
         <li>Commits:
             <ul>
@@ -21,13 +21,14 @@
                 {{end}}
             </ul>
         </li>
+    <br>
     {{end}}
 </ul>
 <h1>{{.Title2}}</h1>
 <ul>
     {{range .DeployTasks}}
-    <li>ID: {{.Id}}</li>
-    <li>Build task ID: {{.BuildTaskId}}</li>
+    <li><b>ID: {{.Id}}</b></li>
+    <li>Build task ID: <a  href="#{{.BuildTaskId}}">{{.BuildTaskId}}</a></li>
     <li>Status: {{.Status}}</li>
     <li>Pre-install: {{.Config.PreInstall}}</li>
     <li>Post-install: {{.Config.PostInstall}}</li>
@@ -40,5 +41,6 @@
             <li>Auto remove: {{.Config.ContainerConfig.AutoRemove}}</li>
         </ul>
     </li>
+    <br>
 {{end}}
 </ul>
