@@ -50,8 +50,11 @@ func (d *Deployer) Start(cfg model.DeployConfig) error {
 			return err
 		}
 
-		if cfg.ContainerConfig.MountTarget != "" {
-			if err = exec.Command("sudo", "chmod", "u+x", "-R", cfg.ContainerConfig.MountSource).Run(); err != nil {
+		if cfg.ContainerConfig.MountSource != "" {
+			cmd := exec.Command("sudo", "chmod", "u+x", "-R", cfg.ContainerConfig.MountSource)
+			output, err := cmd.Output()
+			log.Println(string(output))
+			if err != nil {
 				return err
 			}
 		}
@@ -60,8 +63,11 @@ func (d *Deployer) Start(cfg model.DeployConfig) error {
 	if cfg.PostInstall != "" {
 		strs := strings.Split(cfg.PostInstall, " ")
 		cmd := exec.Command(strs[0], strs[1:]...)
-		output, _ := cmd.Output()
+		output, err := cmd.Output()
 		log.Println(string(output))
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
