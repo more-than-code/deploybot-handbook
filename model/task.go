@@ -57,6 +57,7 @@ type SourceConfig struct {
 	RepoUsername   string `bson:",omitempty"`
 	RepoToken      string `bson:",omitempty"`
 	ImageTagPrefix string
+	Commits        []Commit `bson:",omitempty"`
 }
 
 type BuildConfig struct {

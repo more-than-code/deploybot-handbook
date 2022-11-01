@@ -1,5 +1,25 @@
 package model
 
+type Commit struct {
+	Id        string
+	TreeId    string `json:"tree_id"`
+	Distinct  bool
+	Message   string
+	Timestamp string
+	Url       string
+	Author    struct {
+		Name  string
+		Email string
+	}
+	Committer struct {
+		Name  string
+		Email string
+	}
+	Added    []string
+	Removed  []string
+	Modified []string
+}
+
 type GitHubHookshot struct {
 	Ref        string
 	Repository struct {
@@ -54,43 +74,6 @@ type GitHubHookshot struct {
 		Type      string
 		SiteAdmin bool `json:"site_admin"`
 	}
-	Commits []struct {
-		Id        string
-		TreeId    string `json:"tree_id"`
-		Distinct  bool
-		Message   string
-		Timestamp string
-		Url       string
-		Author    struct {
-			Name  string
-			Email string
-		}
-		Committer struct {
-			Name  string
-			Email string
-		}
-		Added    []string
-		Removed  []string
-		Modified []string
-	}
-
-	HeadCommit struct {
-		Id        string
-		TreeId    string `json:"tree_id"`
-		Distinct  bool
-		Message   string
-		Timestamp string
-		Url       string
-		Author    struct {
-			Name  string
-			Email string
-		}
-		Committer struct {
-			Name  string
-			Email string
-		}
-		Added    []string
-		Removed  []string
-		Modified []string
-	} `json:"head_commit"`
+	Commits    []Commit
+	HeadCommit Commit `json:"head_commit"`
 }

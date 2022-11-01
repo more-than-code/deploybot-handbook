@@ -3,7 +3,6 @@ package task
 import (
 	"context"
 	"log"
-	"os"
 	"os/exec"
 	"strings"
 
@@ -28,9 +27,7 @@ func NewDeployer() *Deployer {
 func (d *Deployer) Start(cfg model.DeployConfig) error {
 	if cfg.ContainerConfig != nil {
 		if cfg.ContainerConfig.MountTarget != "" {
-			path, _ := os.Getwd()
-
-			sourceDir := path + "/data/" + cfg.ContainerConfig.ServiceName
+			sourceDir := "/var/appdata/" + cfg.ContainerConfig.ServiceName
 			// err := os.MkdirAll(sourceDir, 0644)
 
 			// cmd := exec.Command("sudo", "mkdir", sourceDir)
@@ -53,14 +50,14 @@ func (d *Deployer) Start(cfg model.DeployConfig) error {
 			return err
 		}
 
-		if cfg.ContainerConfig.MountSource != "" {
-			cmd := exec.Command("sudo", "chmod", "u+x", "-R", cfg.ContainerConfig.MountSource)
-			output, err := cmd.Output()
-			log.Println(string(output))
-			if err != nil {
-				return err
-			}
-		}
+		// if cfg.ContainerConfig.MountSource != "" {
+		// 	cmd := exec.Command("sudo", "chmod", "u+x", "-R", cfg.ContainerConfig.MountSource)
+		// 	output, err := cmd.Output()
+		// 	log.Println(string(output))
+		// 	if err != nil {
+		// 		return err
+		// 	}
+		// }
 	}
 
 	if cfg.PostInstall != "" {
