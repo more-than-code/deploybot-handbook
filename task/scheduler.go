@@ -253,7 +253,7 @@ func (s *Scheduler) GhWebhookHandler(w http.ResponseWriter, r *http.Request) {
 	input := &model.UpdateBuildTaskInput{
 		Config: model.BuildConfig{
 			Webhook:      s.cfg.PostBuildWebhook,
-			SourceConfig: model.SourceConfig{RepoCloneUrl: data.Repository.CloneUrl, RepoName: data.Repository.Name, RepoUsername: s.cfg.RepoUsername, RepoToken: s.cfg.RepoToken, ImageTagPrefix: "binartist/"}}}
+			SourceConfig: model.SourceConfig{RepoCloneUrl: data.Repository.CloneUrl, RepoName: data.Repository.Name, RepoUsername: s.cfg.RepoUsername, RepoToken: s.cfg.RepoToken, ImageTagPrefix: "binartist/", Commits: data.Commits}}}
 
 	buildTaskId, _ := s.builder.UpdateTask(input)
 
