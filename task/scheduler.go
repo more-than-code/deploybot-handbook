@@ -72,7 +72,7 @@ func (s *Scheduler) ProcessEvents() {
 }
 
 func (s *Scheduler) ProcessBuildTasks() {
-	tasks, err := s.builder.repo.GetBuildTasks(context.TODO(), &model.BuildTasksInput{StatusFilter: &model.BuildTaskStatusFilter{Option: model.TaskPending}})
+	tasks, err := s.builder.repo.GetBuildTasks(context.TODO(), model.BuildTasksInput{StatusFilter: &model.BuildTaskStatusFilter{Option: model.TaskPending}})
 
 	if err != nil {
 		log.Println(err)
@@ -97,7 +97,7 @@ func (s *Scheduler) ProcessBuildTasks() {
 }
 
 func (s *Scheduler) ProcessDeployTasks() {
-	tasks, err := s.deployer.repo.GetDeployTasks(context.TODO(), &model.DeployTasksInput{StatusFilter: &model.DeployTaskStatusFilter{Option: model.TaskPending}})
+	tasks, err := s.deployer.repo.GetDeployTasks(context.TODO(), model.DeployTasksInput{StatusFilter: &model.DeployTaskStatusFilter{Option: model.TaskPending}})
 
 	if err != nil {
 		log.Println(err)

@@ -1,36 +1,37 @@
 package task
 
 import (
+	"context"
 	"net/http"
 	"text/template"
+
+	"github.com/more-than-code/deploybot/model"
 )
 
-type Todo struct {
+type TaskInfo struct {
 	Title string
-	Done  bool
+	Log   interface{}
 }
 
-type TodoPageData struct {
-	PageTitle string
-	Todos     []Todo
-}
 type Dashboard struct {
+	builder  *Builder
+	deployer *Deployer
 }
 
 func NewDashboard() *Dashboard {
-	return &Dashboard{}
+	return &Dashboard{builder: NewBuilder(), deployer: NewDeployer()}
 }
 
 func (d *Dashboard) DashboardHandler(w http.ResponseWriter, r *http.Request) {
-	tmpl := template.Must(template.ParseFiles("../asset/task.html"))
+	bTasks, _ := d.builder.repo.GetBuildTasks(context.TODO(), model.BuildTasksInput{})
+	// dTasks, _ := d.deployer.repo.GetDeployTasks(context.TODO(), model.DeployTasksInput{})
+	data := []TaskInfo{}
 
-	data := TodoPageData{
-		PageTitle: "My TODO list",
-		Todos: []Todo{
-			{Title: "Task 1", Done: false},
-			{Title: "Task 2", Done: true},
-			{Title: "Task 3", Done: true},
-		},
+	for _, t := range bTasks {
+		data = append(data, TaskInfo{Title: t.Id.Hex(), Log: t})
 	}
+
+	tmpl := template.Must(template.ParseFiles("asset/tasks.html"))
+
 	tmpl.Execute(w, data)
 }

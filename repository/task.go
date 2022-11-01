@@ -43,7 +43,7 @@ func (r *Repository) UpdateDeployTask(ctx context.Context, input *model.UpdateDe
 	return result.UpsertedID.(primitive.ObjectID), nil
 }
 
-func (r *Repository) GetDeployTasks(ctx context.Context, input *model.DeployTasksInput) ([]*model.DeployTask, error) {
+func (r *Repository) GetDeployTasks(ctx context.Context, input model.DeployTasksInput) ([]*model.DeployTask, error) {
 	coll := r.mongoClient.Database("pipeline").Collection("deployTasks")
 
 	filter := bson.M{}
@@ -113,7 +113,7 @@ func (r *Repository) UpdateBuildTask(ctx context.Context, input *model.UpdateBui
 	return result.UpsertedID.(primitive.ObjectID), nil
 }
 
-func (r *Repository) GetBuildTasks(ctx context.Context, input *model.BuildTasksInput) ([]*model.BuildTask, error) {
+func (r *Repository) GetBuildTasks(ctx context.Context, input model.BuildTasksInput) ([]*model.BuildTask, error) {
 	coll := r.mongoClient.Database("pipeline").Collection("buildTasks")
 
 	filter := bson.M{}
