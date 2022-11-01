@@ -1,14 +1,16 @@
-<h1>Build Tasks</h1>
+<h1>{{.Title1}}</h1>
 <ul>
-    {{range .Tasks}}
-        {{if .Status=="Done"}}
-            <li class="done">{{.Id}}
-                <span>{{.Log}}</span>
-            </li>
-        {{else}}
-            <li>{{.Id}}
-                <span>{{.Log}}</span>
-            </li>
-        {{end}}
+    {{range .BuildTasks}}
+        <li>{{.Id}}
+            <span>{{.Log}}</span>
+        </li>
+    {{end}}
+</ul>
+<h1>{{.Title2}}</h1>
+<ul>
+    {{range .DeployTasks}}
+        <li>{{.Id}}
+            <span>{{.Log}}</span>
+        </li>
     {{end}}
 </ul>
