@@ -45,10 +45,18 @@ func (t DeployTask) CreatedAt2Str() string {
 }
 
 func (t DeployTask) ExecutedAt2Str() string {
+	if t.ExecutedAt == 0 {
+		return ""
+	}
+
 	return t.ExecutedAt.Time().String()
 }
 
 func (t DeployTask) StoppedAt2Str() string {
+	if t.StoppedAt == 0 {
+		return ""
+	}
+
 	return t.StoppedAt.Time().String()
 }
 
@@ -106,10 +114,18 @@ func (t BuildTask) CreatedAt2Str() string {
 }
 
 func (t BuildTask) ExecutedAt2Str() string {
+	if t.ExecutedAt == 0 {
+		return ""
+	}
+
 	return t.ExecutedAt.Time().String()
 }
 
 func (t BuildTask) StoppedAt2Str() string {
+	if t.StoppedAt == 0 {
+		return ""
+	}
+
 	return t.StoppedAt.Time().String()
 }
 
