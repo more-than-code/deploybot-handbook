@@ -51,7 +51,8 @@ func (r *Repository) GetDeployTasks(ctx context.Context, input model.DeployTasks
 		filter["status"] = input.StatusFilter.Option
 	}
 
-	cursor, err := coll.Find(ctx, filter)
+	opts := options.Find().SetSort(bson.D{{"createdat", -1}})
+	cursor, err := coll.Find(ctx, filter, opts)
 
 	if err != nil {
 		return nil, err
@@ -130,7 +131,8 @@ func (r *Repository) GetBuildTasks(ctx context.Context, input model.BuildTasksIn
 		filter["status"] = input.StatusFilter.Option
 	}
 
-	cursor, err := coll.Find(ctx, filter)
+	opts := options.Find().SetSort(bson.D{{"createdat", -1}})
+	cursor, err := coll.Find(ctx, filter, opts)
 
 	if err != nil {
 		return nil, err

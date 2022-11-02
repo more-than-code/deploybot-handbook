@@ -11,9 +11,7 @@ import (
 func TestGetDeployTasks(t *testing.T) {
 	r, _ := NewRepository()
 
-	tasks, err := r.GetDeployTasks(context.TODO(), model.DeployTasksInput{
-		StatusFilter: &model.DeployTaskStatusFilter{Option: model.TaskPending},
-	})
+	tasks, err := r.GetDeployTasks(context.TODO(), model.DeployTasksInput{})
 	if err != nil {
 		t.Fatal(err)
 	}
