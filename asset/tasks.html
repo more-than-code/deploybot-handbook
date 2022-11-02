@@ -2,9 +2,7 @@
 <ul>
     {{range .BuildTasks}}
         <li id="{{.Id2Hex}}"><b>ID: {{.Id2Hex}}</b></li>
-        {{if .DeployTaskId2Hex}}
         <li>Deploy task ID: <a  href="#{{.DeployTaskId2Hex}}">{{.DeployTaskId2Hex}}</a></li>
-        {{end}}
         <li>Status: {{.Status}}</li>
         <li>Created at: {{.CreatedAt2Str}}</li>
         <li>Executed at: {{.ExecutedAt2Str}}</li>

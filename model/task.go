@@ -38,6 +38,10 @@ func (t DeployTask) Id2Hex() string {
 }
 
 func (t DeployTask) BuildTaskId2Hex() string {
+	if t.BuildTaskId.IsZero() {
+		return ""
+	}
+
 	return t.BuildTaskId.Hex()
 }
 
@@ -121,6 +125,10 @@ func (t BuildTask) Id2Hex() string {
 }
 
 func (t BuildTask) DeployTaskId2Hex() string {
+	if t.DeployTaskId.IsZero() {
+		return ""
+	}
+
 	return t.DeployTaskId.Hex()
 }
 
