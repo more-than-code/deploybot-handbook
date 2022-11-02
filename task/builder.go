@@ -38,12 +38,17 @@ func (t *Builder) Start(cfg model.BuildConfig) error {
 	}
 
 	if cfg.Script != "" {
-		strs := strings.Split(cfg.Script, " ")
-		cmd := exec.Command(strs[0], strs[1:]...)
-		output, err := cmd.Output()
-		log.Println(string(output))
+		lines := strings.Split(cfg.Script, "\n")
 
-		return err
+		for _, l := range lines {
+			strs := strings.Split(l, " ")
+			cmd := exec.Command(strs[0], strs[1:]...)
+			output, err := cmd.Output()
+			log.Println(string(output))
+			if err != nil {
+				return err
+			}
+		}
 	} else {
 		helper := container.NewContainerHelper("unix:///var/run/docker.sock")
 
@@ -74,6 +79,8 @@ func (t *Builder) Start(cfg model.BuildConfig) error {
 
 		return err
 	}
+
+	return nil
 }
 
 func (b *Builder) UpdateTask(input *model.UpdateBuildTaskInput) (primitive.ObjectID, error) {

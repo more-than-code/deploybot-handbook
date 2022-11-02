@@ -265,6 +265,10 @@ func (s *Scheduler) GhWebhookHandler(w http.ResponseWriter, r *http.Request) {
 			Webhook:      s.cfg.PostBuildWebhook,
 			SourceConfig: model.SourceConfig{RepoCloneUrl: data.Repository.CloneUrl, RepoName: data.Repository.Name, RepoUsername: s.cfg.RepoUsername, RepoToken: s.cfg.RepoToken, ImageTagPrefix: "binartist/", Commits: data.Commits}}}
 
+	if data.Repository.Name == "geoy-services" {
+		input.Config.Script = "docker compose -f /home/ubuntu/deploybot/geoy-services/docker-compose.yaml build graph\ndocker compose -f /home/ubuntu/deploybot/geoy-services/docker-compose.yaml push graph"
+	}
+
 	buildTaskId, _ := s.builder.UpdateTask(input)
 
 	bs, _ := json.Marshal(model.BuildTask{Id: buildTaskId, Config: input.Config})
