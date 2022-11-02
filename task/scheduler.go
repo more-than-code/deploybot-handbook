@@ -200,7 +200,7 @@ func (s *Scheduler) PostBuildHandler(w http.ResponseWriter, r *http.Request) {
 	case "geoy-services":
 		cfg = model.DeployConfig{
 			Webhook:     s.cfg.PostDeployWebhook,
-			Script:      "docker compose -f ~/services/docker-compose.yaml pull graph && docker compose -f ~/services/docker-compose.yaml up -d graph",
+			Script:      "docker compose -f /home/ubuntu/services/docker-compose.yaml pull graph\ndocker compose -f /home/ubuntu/services/docker-compose.yaml up -d graph",
 			PreInstall:  "",
 			PostInstall: "docker restart swag",
 		}

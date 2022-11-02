@@ -25,6 +25,20 @@ func NewDeployer() *Deployer {
 }
 
 func (d *Deployer) Start(cfg model.DeployConfig) error {
+	if cfg.Script != "" {
+		lines := strings.Split(cfg.Script, "\n")
+
+		for _, l := range lines {
+			strs := strings.Split(l, " ")
+			cmd := exec.Command(strs[0], strs[1:]...)
+			output, err := cmd.Output()
+			log.Println(string(output))
+			if err != nil {
+				return err
+			}
+		}
+	}
+
 	if cfg.ContainerConfig != nil {
 		if cfg.PreInstall != "" {
 			strs := strings.Split(cfg.PreInstall, " ")
