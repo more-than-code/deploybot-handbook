@@ -167,9 +167,6 @@ func (s *Scheduler) BuildHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		s.builder.UpdateTaskStatus(&model.UpdateBuildTaskStatusInput{BuildTaskId: data.Id, Payload: model.UpdateBuildTaskStatusInputPayload{Status: model.TaskDone}})
-		data.Status = model.TaskDone
-
 		bs, _ := json.Marshal(data)
 		_, _ = http.Post(data.Config.Webhook, "application/json", bytes.NewReader(bs))
 	}()
@@ -209,6 +206,8 @@ func (s *Scheduler) PostBuildHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	deployTaskId, _ := s.deployer.UpdateTask(&model.UpdateDeployTaskInput{Payload: model.UpdateDeployTaskInputPayload{Config: cfg, BuildTaskId: data.Id}})
+
+	s.builder.UpdateTaskStatus(&model.UpdateBuildTaskStatusInput{BuildTaskId: data.Id, Payload: model.UpdateBuildTaskStatusInputPayload{Status: model.TaskDone, DeployTaskId: deployTaskId}})
 
 	task, _ := json.Marshal(&model.DeployTask{Id: deployTaskId, BuildTaskId: data.Id, Config: cfg})
 	_, err := http.Post(s.cfg.DeployWebhook, "application/json", bytes.NewReader(task))
