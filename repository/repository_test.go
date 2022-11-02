@@ -25,13 +25,15 @@ func TestCreateDeployTask(t *testing.T) {
 	id, _ := primitive.ObjectIDFromHex("635d38a1988fd51e865a5244")
 	task := model.UpdateDeployTaskInput{
 		Id: id,
-		Config: model.DeployConfig{
-			Webhook: "https://geoy.appsive.com/deploy",
-			ContainerConfig: &model.ContainerConfig{
-				ImageName:   "binartist/geoy-webapp",
-				ImageTag:    ":latest",
-				ServiceName: "geoy_webapp",
-				AutoRemove:  true,
+		Payload: model.UpdateDeployTaskInputPayload{
+			Config: model.DeployConfig{
+				Webhook: "https://geoy.appsive.com/deploy",
+				ContainerConfig: &model.ContainerConfig{
+					ImageName:   "binartist/geoy-webapp",
+					ImageTag:    ":latest",
+					ServiceName: "geoy_webapp",
+					AutoRemove:  true,
+				},
 			},
 		},
 	}

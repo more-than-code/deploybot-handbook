@@ -61,11 +61,15 @@ func (t DeployTask) StoppedAt2Str() string {
 	return t.StoppedAt.Time().String()
 }
 
-type UpdateDeployTaskInput struct {
-	Id          primitive.ObjectID
-	BuildTaskId primitive.ObjectID
+type UpdateDeployTaskInputPayload struct {
+	BuildTaskId primitive.ObjectID `bson:",omitempty"`
 	ScheduledAt primitive.DateTime `bson:",omitempty"`
 	Config      DeployConfig
+}
+
+type UpdateDeployTaskInput struct {
+	Id      primitive.ObjectID
+	Payload UpdateDeployTaskInputPayload
 }
 
 type DeployTaskStatusFilter struct {
@@ -76,9 +80,13 @@ type DeployTasksInput struct {
 	StatusFilter *DeployTaskStatusFilter
 }
 
+type UpdateDeployTaskStatusInputPayload struct {
+	Status string
+}
+
 type UpdateDeployTaskStatusInput struct {
 	DeployTaskId primitive.ObjectID
-	Status       string
+	Payload      UpdateDeployTaskStatusInputPayload
 }
 
 type SourceConfig struct {
@@ -97,18 +105,23 @@ type BuildConfig struct {
 }
 
 type BuildTask struct {
-	Id          primitive.ObjectID `bson:"_id"`
-	CreatedAt   primitive.DateTime
-	UpdatedAt   primitive.DateTime
-	ExecutedAt  primitive.DateTime
-	StoppedAt   primitive.DateTime
-	ScheduledAt primitive.DateTime
-	Status      string
-	Config      BuildConfig
+	Id           primitive.ObjectID `bson:"_id"`
+	DeployTaskId primitive.ObjectID
+	CreatedAt    primitive.DateTime
+	UpdatedAt    primitive.DateTime
+	ExecutedAt   primitive.DateTime
+	StoppedAt    primitive.DateTime
+	ScheduledAt  primitive.DateTime
+	Status       string
+	Config       BuildConfig
 }
 
 func (t BuildTask) Id2Hex() string {
 	return t.Id.Hex()
+}
+
+func (t BuildTask) DeployTaskId2Hex() string {
+	return t.DeployTaskId.Hex()
 }
 
 func (t BuildTask) CreatedAt2Str() string {
@@ -131,15 +144,24 @@ func (t BuildTask) StoppedAt2Str() string {
 	return t.StoppedAt.Time().String()
 }
 
-type UpdateBuildTaskInput struct {
-	Id          primitive.ObjectID
+type UpdateBuildTaskInputPayload struct {
 	ScheduledAt primitive.DateTime `bson:",omitempty"`
 	Config      BuildConfig
 }
 
+type UpdateBuildTaskInput struct {
+	Id      primitive.ObjectID
+	Payload UpdateBuildTaskInputPayload
+}
+
+type UpdateBuildTaskStatusInputPayload struct {
+	DeployTaskId primitive.ObjectID `bson:",omitempty"`
+	Status       string
+}
+
 type UpdateBuildTaskStatusInput struct {
 	BuildTaskId primitive.ObjectID
-	Status      string
+	Payload     UpdateBuildTaskStatusInputPayload
 }
 
 type BuildTaskStatusFilter struct {

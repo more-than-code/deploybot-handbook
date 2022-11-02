@@ -2,6 +2,7 @@
 <ul>
     {{range .BuildTasks}}
         <li id="{{.Id2Hex}}"><b>ID: {{.Id2Hex}}</b></li>
+        <li>Deploy task ID: <a  href="#{{.DeployTaskId2Hex}}">{{.DeployTaskId2Hex}}</a></li>
         <li>Status: {{.Status}}</li>
         <li>Created at: {{.CreatedAt2Str}}</li>
         <li>Executed at: {{.ExecutedAt2Str}}</li>
@@ -30,7 +31,7 @@
 <h1>{{.Title2}}</h1>
 <ul>
     {{range .DeployTasks}}
-    <li><b>ID: {{.Id2Hex}}</b></li>
+    <li id="{{.Id2Hex}}"><b>ID: {{.Id2Hex}}</b></li>
     <li>Build task ID: <a  href="#{{.BuildTaskId2Hex}}">{{.BuildTaskId2Hex}}</a></li>
     <li>Status: {{.Status}}</li>
     <li>Created at: {{.CreatedAt2Str}}</li>

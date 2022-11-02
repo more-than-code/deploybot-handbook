@@ -13,7 +13,7 @@ import (
 )
 
 func (r *Repository) UpdateDeployTask(ctx context.Context, input *model.UpdateDeployTaskInput) (primitive.ObjectID, error) {
-	doc := util.StructToBsonDoc(input)
+	doc := util.StructToBsonDoc(input.Payload)
 
 	if input.Id.IsZero() {
 		input.Id = primitive.NewObjectID()
@@ -21,8 +21,6 @@ func (r *Repository) UpdateDeployTask(ctx context.Context, input *model.UpdateDe
 	} else {
 		doc["updatedat"] = primitive.NewDateTimeFromTime(time.Now().UTC())
 	}
-
-	delete(doc, "id")
 
 	upsert := true
 	opts := options.UpdateOptions{Upsert: &upsert}
@@ -76,8 +74,8 @@ func (r *Repository) DeleteDeployTasks(ctx context.Context, id primitive.ObjectI
 func (r *Repository) UpdateDeployTaskStatus(ctx context.Context, input *model.UpdateDeployTaskStatusInput) error {
 	filter := bson.M{"_id": input.DeployTaskId, "status": bson.M{"$in": bson.A{model.TaskPending, model.TaskInProgress}}}
 
-	doc := bson.M{"status": input.Status}
-	switch input.Status {
+	doc := bson.M{"status": input.Payload.Status}
+	switch input.Payload.Status {
 	case model.TaskInProgress:
 		doc["executedat"] = primitive.NewDateTimeFromTime(time.Now().UTC())
 	case model.TaskDone, model.TaskFailed, model.TaskCanceled:
@@ -93,7 +91,7 @@ func (r *Repository) UpdateDeployTaskStatus(ctx context.Context, input *model.Up
 }
 
 func (r *Repository) UpdateBuildTask(ctx context.Context, input *model.UpdateBuildTaskInput) (primitive.ObjectID, error) {
-	doc := util.StructToBsonDoc(input)
+	doc := util.StructToBsonDoc(input.Payload)
 
 	if input.Id.IsZero() {
 		input.Id = primitive.NewObjectID()
@@ -101,8 +99,6 @@ func (r *Repository) UpdateBuildTask(ctx context.Context, input *model.UpdateBui
 	} else {
 		doc["updatedat"] = primitive.NewDateTimeFromTime(time.Now().UTC())
 	}
-
-	delete(doc, "id")
 
 	upsert := true
 	opts := options.UpdateOptions{Upsert: &upsert}
@@ -156,12 +152,16 @@ func (r *Repository) DeleteBuildTasks(ctx context.Context, id primitive.ObjectID
 func (r *Repository) UpdateBuildTaskStatus(ctx context.Context, input *model.UpdateBuildTaskStatusInput) error {
 	filter := bson.M{"_id": input.BuildTaskId, "status": bson.M{"$in": bson.A{model.TaskPending, model.TaskInProgress}}}
 
-	doc := bson.M{"status": input.Status}
-	switch input.Status {
+	doc := bson.M{"status": input.Payload.Status}
+	switch input.Payload.Status {
 	case model.TaskInProgress:
 		doc["executedat"] = primitive.NewDateTimeFromTime(time.Now().UTC())
 	case model.TaskDone, model.TaskFailed, model.TaskCanceled:
 		doc["stoppedat"] = primitive.NewDateTimeFromTime(time.Now().UTC())
+	}
+
+	if !input.Payload.DeployTaskId.IsZero() {
+		doc["deploytaskid"] = input.Payload.DeployTaskId
 	}
 
 	update := bson.M{"$set": doc}
