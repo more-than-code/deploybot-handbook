@@ -43,6 +43,7 @@
                 <li>Script: {{.Config.Script}}</li>
                 <li>Pre-install: {{.Config.PreInstall}}</li>
                 <li>Post-install: {{.Config.PostInstall}}</li>
+                {{if .Config.ContainerConfig}}
                 <li>Container config:
                     <ul>
                         <li>Image name: {{.Config.ContainerConfig.ImageName}}</li>
@@ -52,6 +53,7 @@
                         <li>Auto remove: {{.Config.ContainerConfig.AutoRemove}}</li>
                     </ul>
                 </li>
+                {{end}}
             </ul>
         </details>
         
