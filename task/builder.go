@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"strings"
 
 	"github.com/docker/docker/api/types"
 	"github.com/more-than-code/deploybot/container"
@@ -27,43 +28,52 @@ func NewBuilder() *Builder {
 	return &Builder{repo: r}
 }
 
-func (t *Builder) Start(cfg model.SourceConfig) error {
-	defer os.RemoveAll(cfg.RepoName)
+func (t *Builder) Start(cfg model.BuildConfig) error {
+	defer os.RemoveAll(cfg.SourceConfig.RepoName)
 
-	err := util.CloneRepo(cfg.RepoName, cfg.RepoCloneUrl, cfg.RepoUsername, cfg.RepoToken)
-
-	if err != nil {
-		return err
-	}
-
-	helper := container.NewContainerHelper("unix:///var/run/docker.sock")
-
-	path, err := os.Getwd()
+	err := util.CloneRepo(cfg.SourceConfig.RepoName, cfg.SourceConfig.RepoCloneUrl, cfg.SourceConfig.RepoUsername, cfg.SourceConfig.RepoToken)
 
 	if err != nil {
 		return err
 	}
 
-	buf, err := util.TarFiles(fmt.Sprintf("%s/%s/", path, cfg.RepoName))
+	if cfg.Script != "" {
+		strs := strings.Split(cfg.Script, " ")
+		cmd := exec.Command(strs[0], strs[1:]...)
+		output, err := cmd.Output()
+		log.Println(string(output))
 
-	if err != nil {
+		return err
+	} else {
+		helper := container.NewContainerHelper("unix:///var/run/docker.sock")
+
+		path, err := os.Getwd()
+
+		if err != nil {
+			return err
+		}
+
+		buf, err := util.TarFiles(fmt.Sprintf("%s/%s/", path, cfg.SourceConfig.RepoName))
+
+		if err != nil {
+			return err
+		}
+
+		tag := cfg.SourceConfig.ImageTagPrefix + cfg.SourceConfig.RepoName
+		err = helper.BuildImage(buf, &types.ImageBuildOptions{Tags: []string{tag}})
+
+		if err != nil {
+			return err
+		}
+
+		// TODO: figure out the right way of using the SDK API instead of the CMD workaround
+		cmd := exec.Command("docker", "push", tag)
+		log.Printf("Pushing image %s", tag)
+		err = cmd.Run()
+		log.Printf("Pushing finished with error: %v", err)
+
 		return err
 	}
-
-	tag := cfg.ImageTagPrefix + cfg.RepoName
-	err = helper.BuildImage(buf, &types.ImageBuildOptions{Tags: []string{tag}})
-
-	if err != nil {
-		return err
-	}
-
-	// TODO: figure out the right way of using the SDK API instead of the CMD workaround
-	cmd := exec.Command("docker", "push", tag)
-	log.Printf("Pushing image %s", tag)
-	err = cmd.Run()
-	log.Printf("Pushing finished with error: %v", err)
-
-	return err
 }
 
 func (b *Builder) UpdateTask(input *model.UpdateBuildTaskInput) (primitive.ObjectID, error) {

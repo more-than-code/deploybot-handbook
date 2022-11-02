@@ -15,6 +15,7 @@ type ContainerConfig struct {
 
 type DeployConfig struct {
 	Webhook         string
+	Script          string
 	PreInstall      string
 	ContainerConfig *ContainerConfig
 	PostInstall     string
@@ -91,6 +92,7 @@ type SourceConfig struct {
 
 type BuildConfig struct {
 	Webhook      string
+	Script       string
 	SourceConfig SourceConfig
 }
 

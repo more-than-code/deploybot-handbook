@@ -82,7 +82,7 @@ func (s *Scheduler) ProcessBuildTasks() {
 
 	for _, t := range tasks {
 		go func(t2 *model.BuildTask) {
-			err := s.builder.Start(t2.Config.SourceConfig)
+			err := s.builder.Start(t2.Config)
 
 			if err != nil {
 				log.Println(err)
@@ -158,7 +158,7 @@ func (s *Scheduler) BuildHandler(w http.ResponseWriter, r *http.Request) {
 
 	go func() {
 		s.builder.UpdateTaskStatus(&model.UpdateBuildTaskStatusInput{BuildTaskId: data.Id, Status: model.TaskInProgress})
-		err := s.builder.Start(data.Config.SourceConfig)
+		err := s.builder.Start(data.Config)
 
 		if err != nil {
 			s.builder.UpdateTaskStatus(&model.UpdateBuildTaskStatusInput{BuildTaskId: data.Id, Status: model.TaskFailed})
@@ -197,6 +197,14 @@ func (s *Scheduler) PostBuildHandler(w http.ResponseWriter, r *http.Request) {
 				AutoRemove:  true,
 			},
 		}
+	case "geoy-services":
+		cfg = model.DeployConfig{
+			Webhook:     s.cfg.PostDeployWebhook,
+			Script:      "docker compose -f geoy-services/docker-compose.yaml pull graph && docker compose -f geoy-services/docker-compose.yaml up -d graph",
+			PreInstall:  "",
+			PostInstall: "docker restart swag",
+		}
+
 	}
 
 	deployTaskId, _ := s.deployer.UpdateTask(&model.UpdateDeployTaskInput{Config: cfg, BuildTaskId: data.Id})
