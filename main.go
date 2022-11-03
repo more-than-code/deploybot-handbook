@@ -31,6 +31,17 @@ func main() {
 		g.POST("/pipelineTask", api.PostPipelineTask())
 		g.GET("/pipelineTask", api.GetPipelineTask())
 		g.PUT("/pipelineTaskStatus", api.PutPipelineTaskStatus())
+	} else {
+		t := task.NewScheduler()
+		g.POST("/ghWebhook", t.GhWebhookHandler())
+		g.POST("/pkStreamWebhook", t.StreamWebhookHandler())
+
+		api := api.NewApi()
+		g.GET("/", api.DashboardHandler())
+		g.GET("/pipelines", api.GetPipelines())
+		g.POST("/pipelineTask", api.PostPipelineTask())
+		g.GET("/pipelineTask", api.GetPipelineTask())
+		g.PUT("/pipelineTaskStatus", api.PutPipelineTaskStatus())
 	}
 
 	g.Run()
