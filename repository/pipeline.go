@@ -90,9 +90,9 @@ func (r *Repository) UpdatePipelineStatus(ctx context.Context, input *model.Upda
 
 	switch input.Payload.Status {
 	case model.PipelineBusy:
-		doc["tasks.$.executedat"] = primitive.NewDateTimeFromTime(time.Now().UTC())
+		doc["executedat"] = primitive.NewDateTimeFromTime(time.Now().UTC())
 	case model.PipelineIdle:
-		doc["tasks.$.stoppedat"] = primitive.NewDateTimeFromTime(time.Now().UTC())
+		doc["stoppedat"] = primitive.NewDateTimeFromTime(time.Now().UTC())
 	}
 
 	update := bson.M{"$set": doc}
