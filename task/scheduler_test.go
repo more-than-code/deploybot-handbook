@@ -20,7 +20,7 @@ func TestHandleEvent(t *testing.T) {
 func TestCreateTasks(t *testing.T) {
 	s := NewScheduler()
 
-	plId, _ := s.CreatePipeline("geo-webapp")
+	plId, _ := s.CreatePipeline("geoy-webapp")
 	tId := primitive.NewObjectID()
 	t2Id := primitive.NewObjectID()
 

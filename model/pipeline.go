@@ -83,7 +83,7 @@ type GetPipelineTaskInput struct {
 }
 
 type Pipeline struct {
-	Id        primitive.ObjectID
+	Id        primitive.ObjectID `bson:"_id"`
 	Name      string
 	CreatedAt primitive.DateTime
 	UpdatedAt primitive.DateTime
