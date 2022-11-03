@@ -30,7 +30,7 @@ func TestCreateTasks(t *testing.T) {
 		docker build geoy-webapp -t binartist/geoy-webapp
 		docker push binartist/geoy-webapp
 	`
-	_, err := s.CreateTask(plId, tId, t2Id, script, "", "https://geoy.appsive.com/pkTaskWebook")
+	_, err := s.CreateTask(plId, tId, t2Id, script, "", "https://geoy.appsive.com/pkStreamWebook")
 
 	if err != nil {
 		t.Fatal(err)
