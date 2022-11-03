@@ -95,7 +95,11 @@ func (r *Repository) GetPipelineTask(ctx context.Context, input *model.GetPipeli
 	var pipeline model.Pipeline
 	err := coll.FindOne(ctx, filter, &opts).Decode(&pipeline)
 
-	return pipeline.Tasks[0], err
+	if err != nil {
+		return nil, err
+	}
+
+	return pipeline.Tasks[0], nil
 }
 
 func (r *Repository) DeletePipelineTask(ctx context.Context, input *model.DeletePipelineTaskInput) error {
