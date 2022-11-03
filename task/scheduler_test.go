@@ -40,6 +40,7 @@ func TestCreateTasks(t *testing.T) {
 		sudo mkdir -p /var/appdata/geoy_webapp
 		docker pull binartist/geoy-webapp
 		docker run --rm --name geoy_webapp -v /var/appdata/geoy_webapp:/var/www binartist/geoy-webapp
+		docker restart swag
 	`
 
 	_, err = s.CreateTask(plId, t2Id, primitive.NilObjectID, script, "", "")
@@ -47,4 +48,33 @@ func TestCreateTasks(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+
+	plId, _ = s.CreatePipeline("geoy-services")
+	tId = primitive.NewObjectID()
+	t2Id = primitive.NewObjectID()
+
+	script = `
+		rm -rf geoy-services
+		git clone https://github.com/joe-and-his-friends/geoy-services.git
+		docker compose -f geoy-services/docker-compose.yaml build graph
+		docker compose -f geoy-services/docker-compose.yaml push graph
+	`
+	_, err = s.CreateTask(plId, tId, t2Id, script, "", "https://geoy.appsive.com/pkStreamWebook")
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	script = `
+		docker compose -f geoy-services/docker-compose.yaml pull graph
+		docker compose -f geoy-services/docker-compose.yaml up -d graph
+		docker restart swag
+	`
+
+	_, err = s.CreateTask(plId, t2Id, primitive.NilObjectID, script, "", "")
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
 }

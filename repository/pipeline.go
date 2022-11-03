@@ -111,6 +111,20 @@ func (r *Repository) DeletePipelineTask(ctx context.Context, input *model.Delete
 	return err
 }
 
+func (r *Repository) UpdatePipelineTask(ctx context.Context, input *model.UpdatePipelineTaskInput) error {
+	filter := bson.M{"_id": input.PipelineId, "tasks.id": input.Id}
+
+	doc := util.StructToBsonDoc(input.Payload)
+	doc["updatedat"] = primitive.NewDateTimeFromTime(time.Now().UTC())
+
+	update := bson.M{"$set": doc}
+
+	coll := r.mongoClient.Database("pipeline").Collection("pipelines")
+	_, err := coll.UpdateOne(ctx, filter, update)
+
+	return err
+}
+
 func (r *Repository) UpdatePipelineTaskStatus(ctx context.Context, input *model.UpdatePipelineTaskStatusInput) error {
 	filter := bson.M{"_id": input.PipelineId, "tasks.id": input.TaskId}
 

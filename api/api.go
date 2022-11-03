@@ -125,6 +125,27 @@ func (a *Api) GetPipelineTask() gin.HandlerFunc {
 	}
 }
 
+func (a *Api) PatchPipelineTask() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		var input model.UpdatePipelineTaskInput
+		err := ctx.BindJSON(&input)
+
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, PatchPipelineTaskResponse{Code: CodeClientError, Msg: err.Error()})
+			return
+		}
+
+		err = a.repo.UpdatePipelineTask(ctx, &input)
+
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, PatchPipelineTaskResponse{Code: CodeServerError, Msg: err.Error()})
+			return
+		}
+
+		ctx.JSON(http.StatusBadRequest, PatchPipelineTaskResponse{})
+	}
+}
+
 func (a *Api) PutPipelineTaskStatus() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var input model.UpdatePipelineTaskStatusInput

@@ -27,10 +27,13 @@ func main() {
 	} else if cfg.JobRole == "Coordinator" {
 		api := api.NewApi()
 		g.GET("/", api.DashboardHandler())
-		g.GET("/pipelines", api.GetPipelines())
-		g.POST("/pipelineTask", api.PostPipelineTask())
-		g.GET("/pipelineTask", api.GetPipelineTask())
-		g.PUT("/pipelineTaskStatus", api.PutPipelineTaskStatus())
+		g.GET("/api/pipelines", api.GetPipelines())
+		g.GET("/api/pipeline/:name", api.GetPipeline())
+		g.POST("/api/pipeline", api.PostPipeline())
+
+		g.GET("/api/pipelineTask/:pid/:tid", api.GetPipelineTask())
+		g.POST("/api/pipelineTask", api.PostPipelineTask())
+		g.PUT("/api/pipelineTaskStatus", api.PutPipelineTaskStatus())
 	} else {
 		t := task.NewScheduler()
 		g.POST("/ghWebhook", t.GhWebhookHandler())
@@ -44,8 +47,9 @@ func main() {
 
 		g.GET("/api/pipelineTask/:pid/:tid", api.GetPipelineTask())
 		g.POST("/api/pipelineTask", api.PostPipelineTask())
+		g.PATCH("/api/pipelineTask", api.PatchPipelineTask())
 		g.PUT("/api/pipelineTaskStatus", api.PutPipelineTaskStatus())
 	}
 
-	g.Run()
+	g.Run(":8080")
 }

@@ -105,7 +105,7 @@ type CreatePipelineTaskInput struct {
 
 type UpdatePipelineTaskInput struct {
 	PipelineId primitive.ObjectID
-	TaskId     primitive.ObjectID
+	Id         primitive.ObjectID
 	Payload    UpdatePipelineTaskInputPayload
 }
 

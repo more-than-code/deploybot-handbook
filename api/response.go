@@ -57,11 +57,12 @@ type GetPipelineTaskResponse struct {
 	Payload GetPipelineTaskResponsePayload
 }
 
-type PutPipelineTaskStatusResponsePayload struct {
-	Status string
+type PatchPipelineTaskResponse struct {
+	Code int
+	Msg  string
 }
+
 type PutPipelineTaskStatusResponse struct {
-	Code    int
-	Msg     string
-	Payload PutPipelineTaskStatusResponsePayload
+	Code int
+	Msg  string
 }
