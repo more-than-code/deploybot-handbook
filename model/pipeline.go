@@ -11,7 +11,7 @@ type TaskConfig struct {
 }
 
 type Task struct {
-	Id          primitive.ObjectID `bson:"_id"`
+	Id          primitive.ObjectID
 	Name        string
 	CreatedAt   primitive.DateTime
 	UpdatedAt   primitive.DateTime

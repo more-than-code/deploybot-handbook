@@ -78,6 +78,7 @@ func (r *Repository) CreatePipelineTask(ctx context.Context, input *model.Create
 		doc["id"] = primitive.NewObjectID()
 	}
 
+	doc["status"] = model.TaskPending
 	doc["createdat"] = primitive.NewDateTimeFromTime(time.Now().UTC())
 
 	update := bson.M{"$push": bson.M{"tasks": doc}}
@@ -90,10 +91,11 @@ func (r *Repository) GetPipelineTask(ctx context.Context, input *model.GetPipeli
 	coll := r.mongoClient.Database("pipeline").Collection("pipelines")
 	filter := bson.M{"_id": input.PipelineId, "tasks.id": input.Id}
 
-	var task model.Task
-	err := coll.FindOne(ctx, filter).Decode(&task)
+	opts := options.FindOneOptions{Projection: bson.M{"tasks.$": 1}}
+	var pipeline model.Pipeline
+	err := coll.FindOne(ctx, filter, &opts).Decode(&pipeline)
 
-	return &task, err
+	return pipeline.Tasks[0], err
 }
 
 func (r *Repository) DeletePipelineTask(ctx context.Context, input *model.DeletePipelineTaskInput) error {
