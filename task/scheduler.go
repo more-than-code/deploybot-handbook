@@ -69,7 +69,7 @@ func (s *Scheduler) StreamWebhookHandler() gin.HandlerFunc {
 		var sw model.StreamWebhook
 		json.Unmarshal(body, &sw)
 
-		url := fmt.Sprintf("%s/pipelineTask/%s/%s", s.cfg.ApiBaseUrl, sw.Payload.PipelineId, sw.Payload.TaskId)
+		url := fmt.Sprintf("%s/pipelineTask/%s/%s", s.cfg.ApiBaseUrl, sw.Payload.PipelineId.Hex(), sw.Payload.TaskId.Hex())
 		log.Println(url)
 		res, _ := http.Get(url)
 		body, _ = io.ReadAll(res.Body)
