@@ -142,6 +142,12 @@ func (s *Scheduler) GhWebhookHandler() gin.HandlerFunc {
 	}
 }
 
+func (s *Scheduler) HealthCheckHandler() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+
+	}
+}
+
 func (s *Scheduler) CreatePipeline(name string) (primitive.ObjectID, error) {
 	body, _ := json.Marshal(model.CreatePipelineInput{Payload: model.CreatePipelineInputPayload{Name: name}})
 	res, _ := http.Post(s.cfg.ApiBaseUrl+"/pipeline", "application/json", bytes.NewReader(body))

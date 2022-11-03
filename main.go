@@ -24,6 +24,7 @@ func main() {
 		t := task.NewScheduler()
 		g.POST("/ghWebhook", t.GhWebhookHandler())
 		g.POST("/pkStreamWebhook", t.StreamWebhookHandler())
+		g.POST("/pkHealthCheck", t.HealthCheckHandler())
 	}
 
 	if cfg.JobRole == 1 || cfg.JobRole == 2 {

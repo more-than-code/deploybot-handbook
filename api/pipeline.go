@@ -2,7 +2,6 @@ package api
 
 import (
 	"net/http"
-	"text/template"
 
 	"github.com/gin-gonic/gin"
 	"github.com/more-than-code/deploybot/model"
@@ -23,16 +22,6 @@ func NewApi() *Api {
 		panic(err)
 	}
 	return &Api{repo: r}
-}
-
-func (a *Api) DashboardHandler() gin.HandlerFunc {
-	return func(ctx *gin.Context) {
-		pls, _ := a.repo.GetPipelines(ctx)
-
-		tmpl := template.Must(template.ParseFiles("asset/tasks.html"))
-
-		tmpl.Execute(ctx.Writer, pls)
-	}
 }
 
 func (a *Api) PostPipeline() gin.HandlerFunc {
