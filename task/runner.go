@@ -1,7 +1,6 @@
 package task
 
 import (
-	"errors"
 	"log"
 	"os/exec"
 
@@ -15,11 +14,7 @@ func NewRunner() *Runner {
 	return &Runner{}
 }
 
-func (r *Runner) DoTask(t *model.Task) error {
-	if t == nil {
-		return errors.New("nil pointer")
-	}
-
+func (r *Runner) DoTask(t model.Task) error {
 	if t.Config.Script != "" {
 		cmd := exec.Command("sh", t.Config.Script)
 		output, err := cmd.Output()
