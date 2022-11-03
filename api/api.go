@@ -72,7 +72,8 @@ func (a *Api) GetPipelines() gin.HandlerFunc {
 
 func (a *Api) GetPipeline() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		var input model.GetPipelineInput
+		name := ctx.Param("name")
+		input := model.GetPipelineInput{Name: name}
 		pl, err := a.repo.GetPipeline(ctx, &input)
 
 		if err != nil {

@@ -70,19 +70,20 @@ func (s *Scheduler) StreamWebhookHandler() gin.HandlerFunc {
 		json.Unmarshal(body, &sw)
 
 		url := fmt.Sprintf("%s/pipelineTask/%s/%s", s.cfg.ApiBaseUrl, sw.Payload.PipelineId.Hex(), sw.Payload.TaskId.Hex())
-		log.Println(url)
+
 		res, _ := http.Get(url)
 		body, _ = io.ReadAll(res.Body)
 
 		var ptRes api.GetPipelineTaskResponse
 		json.Unmarshal(body, &ptRes)
-		log.Println(ptRes)
 
 		t := ptRes.Payload.Task
 
 		if t != nil {
-			s.runner.DoTask(*t)
-			s.ProcessPostTask(sw.Payload.PipelineId, sw.Payload.TaskId, t.Config.DownstreamTaskId, t.Config.DownstreamWebhook)
+			go func() {
+				s.runner.DoTask(*t)
+				s.ProcessPostTask(sw.Payload.PipelineId, sw.Payload.TaskId, t.Config.DownstreamTaskId, t.Config.DownstreamWebhook)
+			}()
 		}
 	}
 }
@@ -94,9 +95,9 @@ func (s *Scheduler) GhWebhookHandler() gin.HandlerFunc {
 		var data model.GitHubHookshot
 		json.Unmarshal(body, &data)
 
-		log.Printf("%+v", data)
+		log.Printf("%+v", data.Commits)
 
-		res, _ := http.Get(s.cfg.ApiBaseUrl + "/pipeline")
+		res, _ := http.Get(fmt.Sprintf("%s/pipeline/%s", s.cfg.ApiBaseUrl, data.Repository.Name))
 		body, _ = io.ReadAll(res.Body)
 
 		var plRes api.GetPipelineResponse
@@ -105,8 +106,10 @@ func (s *Scheduler) GhWebhookHandler() gin.HandlerFunc {
 		t := plRes.Payload.Pipeline.Tasks[0]
 
 		if t != nil {
-			s.runner.DoTask(*t)
-			s.ProcessPostTask(plRes.Payload.Pipeline.Id, t.Id, t.Config.DownstreamTaskId, t.Config.DownstreamWebhook)
+			go func() {
+				s.runner.DoTask(*t)
+				s.ProcessPostTask(plRes.Payload.Pipeline.Id, t.Id, t.Config.DownstreamTaskId, t.Config.DownstreamWebhook)
+			}()
 		}
 	}
 }
