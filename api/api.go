@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/more-than-code/deploybot/model"
 	"github.com/more-than-code/deploybot/repository"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type Api struct {
@@ -105,14 +106,13 @@ func (a *Api) PostPipelineTask() gin.HandlerFunc {
 
 func (a *Api) GetPipelineTask() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		var input model.GetPipelineTaskInput
-		err := ctx.BindJSON(&input)
+		pidStr := ctx.Param("pid")
+		tidStr := ctx.Param("tid")
 
-		if err != nil {
-			ctx.JSON(http.StatusBadRequest, GetPipelineTaskResponse{Code: CodeClientError, Msg: err.Error()})
-			return
-		}
+		pid, _ := primitive.ObjectIDFromHex(pidStr)
+		tid, _ := primitive.ObjectIDFromHex(tidStr)
 
+		input := model.GetPipelineTaskInput{PipelineId: pid, Id: tid}
 		task, err := a.repo.GetPipelineTask(ctx, &input)
 
 		if err != nil {

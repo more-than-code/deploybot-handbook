@@ -41,7 +41,7 @@ func main() {
 		g.GET("/api/pipelines", api.GetPipelines())
 		g.POST("/api/pipeline", api.PostPipeline())
 		g.POST("/api/pipelineTask", api.PostPipelineTask())
-		g.GET("/api/pipelineTask", api.GetPipelineTask())
+		g.GET("/api/pipelineTask/:pid/:tid", api.GetPipelineTask())
 		g.PUT("/api/pipelineTaskStatus", api.PutPipelineTaskStatus())
 	}
 
