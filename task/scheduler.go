@@ -3,48 +3,40 @@ package task
 import (
 	"bytes"
 	"container/list"
-	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"time"
 
-	"github.com/docker/docker/api/types/mount"
+	"github.com/gin-gonic/gin"
 	"github.com/kelseyhightower/envconfig"
+	"github.com/more-than-code/deploybot/api"
 	"github.com/more-than-code/deploybot/model"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-type Config struct {
-	RepoUsername      string `envconfig:"REPO_USERNAME"`
-	RepoToken         string `envconfig:"REPO_TOKEN"`
-	BuildWebhook      string `envconfig:"BUILD_WEBHOOK"`
-	PostBuildWebhook  string `envconfig:"POST_BUILD_WEBHOOK"`
-	DeployWebhook     string `envconfig:"DEPLOY_WEBHOOK"`
-	PostDeployWebhook string `envconfig:"POST_DEPLOY_WEBHOOK"`
-}
-
-var gBuildTaskTicker *time.Ticker
-var gDeployTaskTicker *time.Ticker
-
+var gTaskTicker *time.Ticker
 var gEventQueue = list.New()
 
+type Config struct {
+	ApiBaseUrl string `envconfig:"API_BASE_URL"`
+}
+
 type Scheduler struct {
-	builder  *Builder
-	deployer *Deployer
-	cfg      *Config
+	runner *Runner
+	cfg    Config
 }
 
 func NewScheduler() *Scheduler {
 	var cfg Config
 	err := envconfig.Process("", &cfg)
-
 	if err != nil {
-		log.Println(err)
-		return nil
+		panic(err)
 	}
 
-	return &Scheduler{builder: NewBuilder(), deployer: NewDeployer(), cfg: &cfg}
+	return &Scheduler{runner: NewRunner(), cfg: cfg}
 }
 
 func (s *Scheduler) PushEvent(e model.Event) {
@@ -59,219 +51,91 @@ func (s *Scheduler) PullEvent() model.Event {
 	return e.Value.(model.Event)
 }
 
-func (s *Scheduler) ProcessEvents() {
-	e := s.PullEvent()
+func (s *Scheduler) ProcessPostTask(pipelineId, taskId, nextTaskId primitive.ObjectID, webhook string) {
+	body, _ := json.Marshal(model.UpdatePipelineTaskStatusInput{
+		PipelineId: pipelineId,
+		TaskId:     taskId,
+		Payload:    model.UpdatePipelineTaskStatusInputPayload{Status: model.TaskDone}})
+	http.Post(s.cfg.ApiBaseUrl+"/pipelineTaskStatus", "application/json", bytes.NewReader(body))
 
-	val, ok := e.Value.(string)
-	if e.Key == model.EventDeploy {
-		if ok {
-			switch val {
-			case "geoy-webapp":
-			}
-		}
+	body, _ = json.Marshal(model.StreamWebhook{Payload: model.StreamWebhookPayload{PipelineId: pipelineId, TaskId: nextTaskId}})
+	http.Post(webhook, "application/json", bytes.NewReader(body))
+}
+
+func (s *Scheduler) StreamWebhookHandler() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		body, _ := io.ReadAll(ctx.Request.Body)
+
+		var sw model.StreamWebhook
+		json.Unmarshal(body, &sw)
+
+		res, _ := http.Get(fmt.Sprintf("%s/pipelineTask/%s/%s", s.cfg.ApiBaseUrl, sw.Payload.PipelineId, sw.Payload.TaskId))
+		body, _ = io.ReadAll(res.Body)
+
+		var ptRes api.GetPipelineTaskResponse
+		json.Unmarshal(body, &ptRes)
+
+		t := ptRes.Payload.Task
+		s.runner.DoTask(t)
+		s.ProcessPostTask(sw.Payload.PipelineId, sw.Payload.TaskId, t.Config.DownstreamTaskId, t.Config.DownstreamWebhook)
 	}
 }
 
-func (s *Scheduler) ProcessBuildTasks() {
-	tasks, err := s.builder.repo.GetBuildTasks(context.TODO(), model.BuildTasksInput{StatusFilter: &model.BuildTaskStatusFilter{Option: model.TaskPending}})
+func (s *Scheduler) GhWebhookHandler() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		body, _ := io.ReadAll(ctx.Request.Body)
+
+		var data model.GitHubHookshot
+		json.Unmarshal(body, &data)
+
+		log.Printf("%+v", data)
+
+		res, _ := http.Get(s.cfg.ApiBaseUrl + "/pipeline")
+		body, _ = io.ReadAll(res.Body)
+
+		var plRes api.GetPipelineResponse
+		json.Unmarshal(body, &plRes)
+
+		t := plRes.Payload.Pipeline.Tasks[0]
+
+		s.runner.DoTask(t)
+
+		s.ProcessPostTask(plRes.Payload.Pipeline.Id, t.Id, t.Config.DownstreamTaskId, t.Config.DownstreamWebhook)
+	}
+}
+
+func (s *Scheduler) CreatePipeline(name string) (primitive.ObjectID, error) {
+	body, _ := json.Marshal(model.CreatePipelineInput{Payload: model.CreatePipelineInputPayload{Name: name}})
+	res, _ := http.Post(s.cfg.ApiBaseUrl+"/pipeline", "application/json", bytes.NewReader(body))
+	body, _ = io.ReadAll(res.Body)
+	var plRes api.PostPipelineResponse
+	err := json.Unmarshal(body, &plRes)
+
+	return plRes.Payload.Id, err
+}
+
+func (s *Scheduler) CreateTask(pipelineId, taskId, downstreamTaskId primitive.ObjectID, script, upstreamWebhook, downstreamWebhook string) (primitive.ObjectID, error) {
+	body, err := json.Marshal(model.CreatePipelineTaskInput{PipelineId: pipelineId, Payload: model.CreatePipelineTaskInputPayload{Id: taskId, Config: model.TaskConfig{DownstreamTaskId: downstreamTaskId, DownstreamWebhook: downstreamWebhook, Script: script}}})
 
 	if err != nil {
-		log.Println(err)
-		return
+		return primitive.NilObjectID, err
 	}
 
-	for _, t := range tasks {
-		go func(t2 *model.BuildTask) {
-			err := s.builder.Start(t2.Config)
-
-			if err != nil {
-				log.Println(err)
-				return
-			}
-
-			t2.Status = model.TaskDone
-			data, _ := json.Marshal(t2)
-			_, _ = http.Post(t2.Config.Webhook, "application/json", bytes.NewReader(data))
-
-		}(t)
-	}
-}
-
-func (s *Scheduler) ProcessDeployTasks() {
-	tasks, err := s.deployer.repo.GetDeployTasks(context.TODO(), model.DeployTasksInput{StatusFilter: &model.DeployTaskStatusFilter{Option: model.TaskPending}})
-
+	res, err := http.Post(s.cfg.ApiBaseUrl+"/pipelineTask", "application/json", bytes.NewReader(body))
 	if err != nil {
-		log.Println(err)
-		return
+		return primitive.NilObjectID, err
 	}
 
-	for _, t := range tasks {
-		go func(t2 *model.DeployTask) {
-			err := s.deployer.Start(t2.Config)
-
-			if err != nil {
-				log.Println(err)
-				return
-			}
-
-			t2.Status = model.TaskDone
-			data, _ := json.Marshal(t2)
-			_, _ = http.Post(t2.Config.Webhook, "application/json", bytes.NewReader(data))
-
-		}(t)
-	}
-}
-
-func (s *Scheduler) StartBuild() {
-	if gBuildTaskTicker != nil {
-		return
+	body, err = io.ReadAll(res.Body)
+	if err != nil {
+		return primitive.NilObjectID, err
 	}
 
-	gTicker := time.NewTicker(time.Minute)
-	go func() {
-		for range gTicker.C {
-			s.ProcessBuildTasks()
-		}
-	}()
-}
-
-func (s *Scheduler) StartDeploy() {
-	if gDeployTaskTicker != nil {
-		return
+	var ptRes api.PostPipelineTaskResponse
+	err = json.Unmarshal(body, &ptRes)
+	if err != nil {
+		return primitive.NilObjectID, err
 	}
 
-	gTicker := time.NewTicker(time.Minute)
-	go func() {
-		for range gTicker.C {
-			s.ProcessDeployTasks()
-		}
-	}()
-}
-
-func (s *Scheduler) BuildHandler(w http.ResponseWriter, r *http.Request) {
-	body, _ := io.ReadAll(r.Body)
-
-	var data model.BuildTask
-	json.Unmarshal(body, &data)
-
-	log.Printf("%+v", data)
-
-	go func() {
-		s.builder.UpdateTaskStatus(&model.UpdateBuildTaskStatusInput{BuildTaskId: data.Id, Payload: model.UpdateBuildTaskStatusInputPayload{Status: model.TaskInProgress}})
-
-		err := s.builder.Start(data.Config)
-
-		if err != nil {
-			s.builder.UpdateTaskStatus(&model.UpdateBuildTaskStatusInput{BuildTaskId: data.Id, Payload: model.UpdateBuildTaskStatusInputPayload{Status: model.TaskFailed}})
-			log.Println(err)
-			return
-		}
-
-		bs, _ := json.Marshal(data)
-		_, _ = http.Post(data.Config.Webhook, "application/json", bytes.NewReader(bs))
-	}()
-}
-
-func (s *Scheduler) PostBuildHandler(w http.ResponseWriter, r *http.Request) {
-	body, _ := io.ReadAll(r.Body)
-
-	var data model.BuildTask
-	json.Unmarshal(body, &data)
-
-	log.Printf("%+v", data)
-
-	var cfg model.DeployConfig
-	switch data.Config.SourceConfig.RepoName {
-	case "geoy-webapp":
-		cfg = model.DeployConfig{
-			Webhook:     s.cfg.PostDeployWebhook,
-			PreInstall:  "sudo mkdir -p /var/appdata/geoy_webapp",
-			PostInstall: "docker restart swag",
-			ContainerConfig: &model.ContainerConfig{
-				ImageName:   "binartist/geoy-webapp",
-				ImageTag:    ":latest",
-				ServiceName: "geoy_webapp",
-				Mounts:      []mount.Mount{{Target: "/var/www", Source: "/var/appdata/geoy_webapp", Type: "bind"}},
-				AutoRemove:  true,
-			},
-		}
-	case "geoy-services":
-		cfg = model.DeployConfig{
-			Webhook:     s.cfg.PostDeployWebhook,
-			Script:      "docker compose -f /home/ubuntu/services/docker-compose.yaml pull graph\ndocker compose -f /home/ubuntu/services/docker-compose.yaml up -d graph",
-			PreInstall:  "",
-			PostInstall: "docker restart swag",
-		}
-
-	}
-
-	deployTaskId, _ := s.deployer.UpdateTask(&model.UpdateDeployTaskInput{Payload: model.UpdateDeployTaskInputPayload{Config: cfg, BuildTaskId: data.Id}})
-
-	s.builder.UpdateTaskStatus(&model.UpdateBuildTaskStatusInput{BuildTaskId: data.Id, Payload: model.UpdateBuildTaskStatusInputPayload{Status: model.TaskDone, DeployTaskId: deployTaskId}})
-
-	task, _ := json.Marshal(&model.DeployTask{Id: deployTaskId, BuildTaskId: data.Id, Config: cfg})
-	_, err := http.Post(s.cfg.DeployWebhook, "application/json", bytes.NewReader(task))
-
-	if err == nil {
-		s.deployer.UpdateTaskStatus(&model.UpdateDeployTaskStatusInput{DeployTaskId: deployTaskId, Payload: model.UpdateDeployTaskStatusInputPayload{Status: model.TaskInProgress}})
-	}
-}
-
-func (s *Scheduler) DeployHandler(w http.ResponseWriter, r *http.Request) {
-	body, _ := io.ReadAll(r.Body)
-
-	var data model.DeployTask
-	json.Unmarshal(body, &data)
-
-	log.Printf("%+v", data)
-
-	go func() {
-		err := s.deployer.Start(data.Config)
-
-		if err != nil {
-			log.Println(err)
-			data.Status = model.TaskFailed
-		} else {
-			data.Status = model.TaskDone
-		}
-
-		bs, _ := json.Marshal(data)
-		_, _ = http.Post(data.Config.Webhook, "application/json", bytes.NewReader(bs))
-	}()
-
-}
-
-func (s *Scheduler) PostDeployHandler(w http.ResponseWriter, r *http.Request) {
-	body, _ := io.ReadAll(r.Body)
-
-	var data model.DeployTask
-	json.Unmarshal(body, &data)
-
-	log.Printf("%+v", data)
-
-	s.deployer.UpdateTaskStatus(&model.UpdateDeployTaskStatusInput{DeployTaskId: data.Id, Payload: model.UpdateDeployTaskStatusInputPayload{Status: data.Status}})
-}
-
-func (s *Scheduler) GhWebhookHandler(w http.ResponseWriter, r *http.Request) {
-	body, _ := io.ReadAll(r.Body)
-
-	var data model.GitHubHookshot
-	json.Unmarshal(body, &data)
-
-	log.Printf("%+v", data)
-
-	input := &model.UpdateBuildTaskInput{
-		Payload: model.UpdateBuildTaskInputPayload{Config: model.BuildConfig{
-			Webhook:      s.cfg.PostBuildWebhook,
-			SourceConfig: model.SourceConfig{RepoCloneUrl: data.Repository.CloneUrl, RepoName: data.Repository.Name, RepoUsername: s.cfg.RepoUsername, RepoToken: s.cfg.RepoToken, ImageTagPrefix: "binartist/", Commits: data.Commits}}},
-	}
-
-	if data.Repository.Name == "geoy-services" {
-		input.Payload.Config.Script = "docker compose -f /home/ubuntu/deploybot/geoy-services/docker-compose.yaml build graph\ndocker compose -f /home/ubuntu/deploybot/geoy-services/docker-compose.yaml push graph"
-	}
-
-	buildTaskId, _ := s.builder.UpdateTask(input)
-
-	bs, _ := json.Marshal(model.BuildTask{Id: buildTaskId, Config: input.Payload.Config})
-	_, _ = http.Post(s.cfg.BuildWebhook, "application/json", bytes.NewReader(bs))
+	return ptRes.Payload.Id, err
 }

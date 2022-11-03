@@ -1,5 +1,9 @@
 package model
 
+import (
+	"go.mongodb.org/mongo-driver/bson/primitive"
+)
+
 type Commit struct {
 	Id        string
 	TreeId    string `json:"tree_id"`
@@ -77,4 +81,13 @@ type GitHubHookshot struct {
 	}
 	Commits    []Commit
 	HeadCommit Commit `json:"head_commit"`
+}
+
+type StreamWebhookPayload struct {
+	PipelineId primitive.ObjectID
+	TaskId     primitive.ObjectID
+}
+
+type StreamWebhook struct {
+	Payload StreamWebhookPayload
 }

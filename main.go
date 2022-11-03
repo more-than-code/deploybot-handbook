@@ -1,23 +1,37 @@
 package main
 
 import (
-	"log"
-	"net/http"
-
+	"github.com/gin-gonic/gin"
+	"github.com/kelseyhightower/envconfig"
+	"github.com/more-than-code/deploybot/api"
 	"github.com/more-than-code/deploybot/task"
 )
 
+type Config struct {
+	JobRole string `envconfig:"JOB_ROLE"`
+}
+
 func main() {
-	s := task.NewScheduler()
+	var cfg Config
+	err := envconfig.Process("", &cfg)
+	if err != nil {
+		panic(err)
+	}
 
-	http.HandleFunc("/ghWebhook", s.GhWebhookHandler)
-	http.HandleFunc("/pkBuild", s.BuildHandler)
-	http.HandleFunc("/pkPostBuild", s.PostBuildHandler)
-	http.HandleFunc("/pkDeploy", s.DeployHandler)
-	http.HandleFunc("/pkPostDeploy", s.PostDeployHandler)
+	g := gin.Default()
 
-	d := task.NewDashboard()
-	http.HandleFunc("/", d.DashboardHandler)
+	if cfg.JobRole == "Runner" {
+		t := task.NewScheduler()
+		g.POST("/ghWebhook", t.GhWebhookHandler())
+		g.POST("/pkStreamWebhook", t.StreamWebhookHandler())
+	} else if cfg.JobRole == "Coordinator" {
+		api := api.NewApi()
+		g.GET("/", api.DashboardHandler())
+		g.GET("/pipelines", api.GetPipelines())
+		g.POST("/pipelineTask", api.PostPipelineTask())
+		g.GET("/pipelineTask", api.GetPipelineTask())
+		g.PUT("/pipelineTaskStatus", api.PutPipelineTaskStatus())
+	}
 
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	g.Run()
 }
