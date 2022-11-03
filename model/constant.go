@@ -9,6 +9,11 @@ const (
 )
 
 const (
+	PipelineIdle = "Idle"
+	PipelineBusy = "Busy"
+)
+
+const (
 	EventBuild  = "Build"
 	EventDeploy = "Deploy"
 )

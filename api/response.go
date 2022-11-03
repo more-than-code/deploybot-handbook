@@ -39,30 +39,40 @@ type GetPipelineResponse struct {
 	Payload GetPipelineResponsePayload
 }
 
-type PostPipelineTaskResponsePayload struct {
-	Id primitive.ObjectID
-}
-type PostPipelineTaskResponse struct {
-	Code    int
-	Msg     string
-	Payload PostPipelineTaskResponsePayload
-}
-
-type GetPipelineTaskResponsePayload struct {
-	Task *model.Task
-}
-type GetPipelineTaskResponse struct {
-	Code    int
-	Msg     string
-	Payload GetPipelineTaskResponsePayload
-}
-
-type PatchPipelineTaskResponse struct {
+type PatchPipelineResponse struct {
 	Code int
 	Msg  string
 }
 
-type PutPipelineTaskStatusResponse struct {
+type PutPipelineStatusResponse struct {
+	Code int
+	Msg  string
+}
+
+type PostTaskResponsePayload struct {
+	Id primitive.ObjectID
+}
+type PostTaskResponse struct {
+	Code    int
+	Msg     string
+	Payload PostTaskResponsePayload
+}
+
+type GetTaskResponsePayload struct {
+	Task *model.Task
+}
+type GetTaskResponse struct {
+	Code    int
+	Msg     string
+	Payload GetTaskResponsePayload
+}
+
+type PatchTaskResponse struct {
+	Code int
+	Msg  string
+}
+
+type PutTaskStatusResponse struct {
 	Code int
 	Msg  string
 }

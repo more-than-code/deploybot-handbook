@@ -69,55 +69,11 @@ func (r *Repository) GetPipeline(ctx context.Context, input *model.GetPipelineIn
 	return &pipeline, nil
 }
 
-func (r *Repository) CreatePipelineTask(ctx context.Context, input *model.CreatePipelineTaskInput) (primitive.ObjectID, error) {
-	coll := r.mongoClient.Database("pipeline").Collection("pipelines")
-	filter := bson.M{"_id": input.PipelineId}
+func (r *Repository) UpdatePipeline(ctx context.Context, input *model.UpdatePipelineInput) error {
+	filter := bson.M{"_id": input.Id}
 
 	doc := util.StructToBsonDoc(input.Payload)
-	if input.Payload.Id.IsZero() {
-		doc["id"] = primitive.NewObjectID()
-	}
-
-	doc["status"] = model.TaskPending
-	doc["createdat"] = primitive.NewDateTimeFromTime(time.Now().UTC())
-
-	update := bson.M{"$push": bson.M{"tasks": doc}}
-	_, err := coll.UpdateOne(ctx, filter, update)
-
-	return doc["id"].(primitive.ObjectID), err
-}
-
-func (r *Repository) GetPipelineTask(ctx context.Context, input *model.GetPipelineTaskInput) (*model.Task, error) {
-	coll := r.mongoClient.Database("pipeline").Collection("pipelines")
-	filter := bson.M{"_id": input.PipelineId, "tasks.id": input.Id}
-
-	opts := options.FindOneOptions{Projection: bson.M{"tasks.$": 1}}
-	var pipeline model.Pipeline
-	err := coll.FindOne(ctx, filter, &opts).Decode(&pipeline)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return pipeline.Tasks[0], nil
-}
-
-func (r *Repository) DeletePipelineTask(ctx context.Context, input *model.DeletePipelineTaskInput) error {
-	coll := r.mongoClient.Database("pipeline").Collection("pipelines")
-	filter := bson.M{"_id": input.PipelineId}
-	update := bson.M{"$pull": bson.M{"tasks": bson.M{"id": input.TaskId}}}
-	_, err := coll.UpdateOne(ctx, filter, update)
-
-	return err
-}
-
-func (r *Repository) UpdatePipelineTask(ctx context.Context, input *model.UpdatePipelineTaskInput) error {
-	filter := bson.M{"_id": input.PipelineId, "tasks.id": input.Id}
-
-	doc := bson.M{}
-	doc["tasks.$.updatedat"] = primitive.NewDateTimeFromTime(time.Now().UTC())
-	doc["tasks.$.scheduledat"] = input.Payload.ScheduledAt
-	doc["tasks.$.config"] = input.Payload.Config
+	doc["updatedat"] = primitive.NewDateTimeFromTime(time.Now().UTC())
 
 	update := bson.M{"$set": doc}
 
@@ -127,15 +83,15 @@ func (r *Repository) UpdatePipelineTask(ctx context.Context, input *model.Update
 	return err
 }
 
-func (r *Repository) UpdatePipelineTaskStatus(ctx context.Context, input *model.UpdatePipelineTaskStatusInput) error {
-	filter := bson.M{"_id": input.PipelineId, "tasks.id": input.TaskId}
+func (r *Repository) UpdatePipelineStatus(ctx context.Context, input *model.UpdatePipelineStatusInput) error {
+	filter := bson.M{"_id": input.PipelineId}
 
-	doc := bson.M{"tasks.$.status": input.Payload.Status}
+	doc := bson.M{"status": input.Payload.Status}
 
 	switch input.Payload.Status {
-	case model.TaskInProgress:
+	case model.PipelineBusy:
 		doc["tasks.$.executedat"] = primitive.NewDateTimeFromTime(time.Now().UTC())
-	case model.TaskDone, model.TaskFailed, model.TaskCanceled:
+	case model.PipelineIdle:
 		doc["tasks.$.stoppedat"] = primitive.NewDateTimeFromTime(time.Now().UTC())
 	}
 

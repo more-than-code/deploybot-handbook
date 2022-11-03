@@ -8,7 +8,7 @@ import (
 )
 
 type Config struct {
-	JobRole string `envconfig:"JOB_ROLE"`
+	JobRole int `envconfig:"JOB_ROLE"`
 }
 
 func main() {
@@ -20,36 +20,26 @@ func main() {
 
 	g := gin.Default()
 
-	if cfg.JobRole == "Runner" {
+	if cfg.JobRole == 0 || cfg.JobRole == 2 {
 		t := task.NewScheduler()
 		g.POST("/ghWebhook", t.GhWebhookHandler())
 		g.POST("/pkStreamWebhook", t.StreamWebhookHandler())
-	} else if cfg.JobRole == "Coordinator" {
+	}
+
+	if cfg.JobRole == 1 || cfg.JobRole == 2 {
 		api := api.NewApi()
 		g.GET("/", api.DashboardHandler())
+
 		g.GET("/api/pipelines", api.GetPipelines())
 		g.GET("/api/pipeline/:name", api.GetPipeline())
 		g.POST("/api/pipeline", api.PostPipeline())
+		g.PATCH("/api/pipeline", api.PatchPipeline())
+		g.PUT("/api/pipelineStatus", api.PutPipelineStatus())
 
-		g.GET("/api/pipelineTask/:pid/:tid", api.GetPipelineTask())
-		g.POST("/api/pipelineTask", api.PostPipelineTask())
-		g.PATCH("/api/pipelineTask", api.PatchPipelineTask())
-		g.PUT("/api/pipelineTaskStatus", api.PutPipelineTaskStatus())
-	} else {
-		t := task.NewScheduler()
-		g.POST("/ghWebhook", t.GhWebhookHandler())
-		g.POST("/pkStreamWebhook", t.StreamWebhookHandler())
-
-		api := api.NewApi()
-		g.GET("/", api.DashboardHandler())
-		g.GET("/api/pipelines", api.GetPipelines())
-		g.GET("/api/pipeline/:name", api.GetPipeline())
-		g.POST("/api/pipeline", api.PostPipeline())
-
-		g.GET("/api/pipelineTask/:pid/:tid", api.GetPipelineTask())
-		g.POST("/api/pipelineTask", api.PostPipelineTask())
-		g.PATCH("/api/pipelineTask", api.PatchPipelineTask())
-		g.PUT("/api/pipelineTaskStatus", api.PutPipelineTaskStatus())
+		g.GET("/api/task/:pid/:tid", api.GetTask())
+		g.POST("/api/task", api.PostTask())
+		g.PATCH("/api/task", api.PatchTask())
+		g.PUT("/api/taskStatus", api.PutTaskStatus())
 	}
 
 	g.Run(":8080")
