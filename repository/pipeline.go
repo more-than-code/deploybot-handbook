@@ -114,8 +114,10 @@ func (r *Repository) DeletePipelineTask(ctx context.Context, input *model.Delete
 func (r *Repository) UpdatePipelineTask(ctx context.Context, input *model.UpdatePipelineTaskInput) error {
 	filter := bson.M{"_id": input.PipelineId, "tasks.id": input.Id}
 
-	doc := util.StructToBsonDoc(input.Payload)
-	doc["updatedat"] = primitive.NewDateTimeFromTime(time.Now().UTC())
+	doc := bson.M{}
+	doc["tasks.$.updatedat"] = primitive.NewDateTimeFromTime(time.Now().UTC())
+	doc["tasks.$.scheduledat"] = input.Payload.ScheduledAt
+	doc["tasks.$.config"] = input.Payload.Config
 
 	update := bson.M{"$set": doc}
 

@@ -33,6 +33,7 @@ func main() {
 
 		g.GET("/api/pipelineTask/:pid/:tid", api.GetPipelineTask())
 		g.POST("/api/pipelineTask", api.PostPipelineTask())
+		g.PATCH("/api/pipelineTask", api.PatchPipelineTask())
 		g.PUT("/api/pipelineTaskStatus", api.PutPipelineTaskStatus())
 	} else {
 		t := task.NewScheduler()

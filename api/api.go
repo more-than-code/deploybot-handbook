@@ -53,7 +53,7 @@ func (a *Api) PostPipeline() gin.HandlerFunc {
 			return
 		}
 
-		ctx.JSON(http.StatusBadRequest, PostPipelineResponse{Payload: PostPipelineResponsePayload{id}})
+		ctx.JSON(http.StatusOK, PostPipelineResponse{Payload: PostPipelineResponsePayload{id}})
 	}
 
 }
@@ -66,7 +66,7 @@ func (a *Api) GetPipelines() gin.HandlerFunc {
 			ctx.JSON(http.StatusBadRequest, GetPipelinesResponse{Code: CodeClientError, Msg: err.Error()})
 		}
 
-		ctx.JSON(http.StatusBadRequest, GetPipelinesResponse{Payload: GetPipelinesResponsePayload{pls}})
+		ctx.JSON(http.StatusOK, GetPipelinesResponse{Payload: GetPipelinesResponsePayload{pls}})
 	}
 }
 
@@ -80,7 +80,7 @@ func (a *Api) GetPipeline() gin.HandlerFunc {
 			ctx.JSON(http.StatusBadRequest, GetPipelineResponse{Code: CodeClientError, Msg: err.Error()})
 		}
 
-		ctx.JSON(http.StatusBadRequest, GetPipelineResponse{Payload: GetPipelineResponsePayload{pl}})
+		ctx.JSON(http.StatusOK, GetPipelineResponse{Payload: GetPipelineResponsePayload{pl}})
 	}
 }
 
@@ -101,7 +101,7 @@ func (a *Api) PostPipelineTask() gin.HandlerFunc {
 			return
 		}
 
-		ctx.JSON(http.StatusBadRequest, PostPipelineTaskResponse{Payload: PostPipelineTaskResponsePayload{id}})
+		ctx.JSON(http.StatusOK, PostPipelineTaskResponse{Payload: PostPipelineTaskResponsePayload{id}})
 	}
 }
 
@@ -121,7 +121,7 @@ func (a *Api) GetPipelineTask() gin.HandlerFunc {
 			return
 		}
 
-		ctx.JSON(http.StatusBadRequest, GetPipelineTaskResponse{Payload: GetPipelineTaskResponsePayload{task}})
+		ctx.JSON(http.StatusOK, GetPipelineTaskResponse{Payload: GetPipelineTaskResponsePayload{task}})
 	}
 }
 
@@ -142,7 +142,7 @@ func (a *Api) PatchPipelineTask() gin.HandlerFunc {
 			return
 		}
 
-		ctx.JSON(http.StatusBadRequest, PatchPipelineTaskResponse{})
+		ctx.JSON(http.StatusOK, PatchPipelineTaskResponse{})
 	}
 }
 
@@ -163,6 +163,6 @@ func (a *Api) PutPipelineTaskStatus() gin.HandlerFunc {
 			return
 		}
 
-		ctx.JSON(http.StatusBadRequest, PutPipelineTaskStatusResponse{})
+		ctx.JSON(http.StatusOK, PutPipelineTaskStatusResponse{})
 	}
 }
