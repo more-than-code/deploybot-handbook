@@ -39,9 +39,11 @@ func main() {
 		api := api.NewApi()
 		g.GET("/", api.DashboardHandler())
 		g.GET("/api/pipelines", api.GetPipelines())
+		g.GET("/api/pipeline/:name", api.GetPipelines())
 		g.POST("/api/pipeline", api.PostPipeline())
-		g.POST("/api/pipelineTask", api.PostPipelineTask())
+
 		g.GET("/api/pipelineTask/:pid/:tid", api.GetPipelineTask())
+		g.POST("/api/pipelineTask", api.PostPipelineTask())
 		g.PUT("/api/pipelineTaskStatus", api.PutPipelineTaskStatus())
 	}
 
