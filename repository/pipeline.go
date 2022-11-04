@@ -16,6 +16,7 @@ func (r *Repository) CreatePipeline(ctx context.Context, input *model.CreatePipe
 	doc := util.StructToBsonDoc(input.Payload)
 
 	doc["createdat"] = primitive.NewDateTimeFromTime(time.Now().UTC())
+	doc["status"] = model.PipelineIdle
 
 	coll := r.mongoClient.Database("pipeline").Collection("pipelines")
 	result, err := coll.InsertOne(ctx, doc)
