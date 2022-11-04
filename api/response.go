@@ -6,8 +6,17 @@ import (
 )
 
 const (
+	ExHttpStatusAuthenticationFailure = 460
+	ExHttpStatusBusinessLogicError    = 461
+)
+
+const (
 	CodeClientError = 1000
 	CodeServerError = 2000
+)
+
+const (
+	MsgPipelineBusy = "Pipleline busy"
 )
 
 type PostPipelineResponsePayload struct {
@@ -73,6 +82,11 @@ type PatchTaskResponse struct {
 }
 
 type PutTaskStatusResponse struct {
+	Code int
+	Msg  string
+}
+
+type WebhookResponse struct {
 	Code int
 	Msg  string
 }

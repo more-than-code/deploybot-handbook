@@ -138,6 +138,11 @@ func (s *Scheduler) GhWebhookHandler() gin.HandlerFunc {
 		var plRes api.GetPipelineResponse
 		json.Unmarshal(body, &plRes)
 
+		if plRes.Payload.Pipeline.Status == model.PipelineBusy {
+			ctx.JSON(api.ExHttpStatusBusinessLogicError, api.WebhookResponse{Code: api.CodeClientError, Msg: api.MsgPipelineBusy})
+			return
+		}
+
 		if plRes.Payload.Pipeline == nil {
 			return
 		}

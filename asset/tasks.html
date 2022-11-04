@@ -13,9 +13,9 @@
     {{range .Tasks}}
     <li style="margin-bottom:10px">Name: <b>{{.Name}}</b> Status: <b>{{.Status}}</b> <span style="margin-left: 20px"><button onclick="alert(`Don't be silly, my friend!`)">RUN</button> <button  onclick="alert(`Not yet implemented.`)">EDIT</button></span></li>
     <ul>
-        <li>ID: <b>{{.Id2Hex}}</b></li>
-        <li>Executed at: <b>{{.ExecutedAt2Str}}</b></li>
-        <li>Stopped at: <b>{{.StoppedAt2Str}}</b></li>
+        <li>ID: {{.Id2Hex}}</li>
+        <li>Executed at: {{.ExecutedAt2Str}}</li>
+        <li>Stopped at: {{.StoppedAt2Str}}</li>
         <li>Remarks: 
             {{if .Remarks}}
             <p>{{.Remarks}}</p>
