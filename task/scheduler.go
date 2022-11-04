@@ -66,7 +66,7 @@ func (s *Scheduler) ProcessPreTask(pipelineId, taskId primitive.ObjectID, source
 			Id:         taskId,
 			Payload:    model.UpdateTaskInputPayload{Remarks: sourceRef}})
 
-		req, _ = http.NewRequest("PUT", s.cfg.ApiBaseUrl+"/task", bytes.NewReader(body))
+		req, _ = http.NewRequest("PATCH", s.cfg.ApiBaseUrl+"/task", bytes.NewReader(body))
 		http.DefaultClient.Do(req)
 	}
 
