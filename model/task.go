@@ -20,12 +20,14 @@ type Task struct {
 	ScheduledAt primitive.DateTime
 	Status      string
 	Config      TaskConfig
+	Remarks     string
 }
 
 type UpdateTaskInputPayload struct {
 	Name        *string
-	ScheduledAt *primitive.DateTime `bson:",omitempty"`
+	ScheduledAt *primitive.DateTime
 	Config      *TaskConfig
+	Remarks     *string
 }
 type UpdateTaskInput struct {
 	PipelineId primitive.ObjectID

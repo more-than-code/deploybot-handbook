@@ -68,6 +68,9 @@ func (r *Repository) UpdateTask(ctx context.Context, input *model.UpdateTaskInpu
 	if input.Payload.Config != nil {
 		doc["tasks.$.config"] = input.Payload.Config
 	}
+	if input.Payload.Remarks != nil {
+		doc["tasks.$.remarks"] = input.Payload.Remarks
+	}
 
 	update := bson.M{"$set": doc}
 

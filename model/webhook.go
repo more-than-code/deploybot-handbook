@@ -86,6 +86,7 @@ type GitHubHookshot struct {
 type StreamWebhookPayload struct {
 	PipelineId primitive.ObjectID
 	TaskId     primitive.ObjectID
+	Remarks    *string
 }
 
 type StreamWebhook struct {

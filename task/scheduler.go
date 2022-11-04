@@ -51,7 +51,7 @@ func (s *Scheduler) PullEvent() model.Event {
 	return e.Value.(model.Event)
 }
 
-func (s *Scheduler) ProcessPreTask(pipelineId, taskId primitive.ObjectID) {
+func (s *Scheduler) ProcessPreTask(pipelineId, taskId primitive.ObjectID, sourceRef *string) {
 	body, _ := json.Marshal(model.UpdateTaskStatusInput{
 		PipelineId: pipelineId,
 		TaskId:     taskId,
@@ -59,6 +59,16 @@ func (s *Scheduler) ProcessPreTask(pipelineId, taskId primitive.ObjectID) {
 
 	req, _ := http.NewRequest("PUT", s.cfg.ApiBaseUrl+"/taskStatus", bytes.NewReader(body))
 	http.DefaultClient.Do(req)
+
+	if sourceRef != nil {
+		body, _ = json.Marshal(model.UpdateTaskInput{
+			PipelineId: pipelineId,
+			Id:         taskId,
+			Payload:    model.UpdateTaskInputPayload{Remarks: sourceRef}})
+
+		req, _ = http.NewRequest("PUT", s.cfg.ApiBaseUrl+"/task", bytes.NewReader(body))
+		http.DefaultClient.Do(req)
+	}
 
 	body, _ = json.Marshal(model.UpdatePipelineStatusInput{
 		PipelineId: pipelineId,
@@ -107,7 +117,7 @@ func (s *Scheduler) StreamWebhookHandler() gin.HandlerFunc {
 
 		if t != nil {
 			go func() {
-				s.ProcessPreTask(sw.Payload.PipelineId, sw.Payload.TaskId)
+				s.ProcessPreTask(sw.Payload.PipelineId, sw.Payload.TaskId, sw.Payload.Remarks)
 				s.runner.DoTask(*t)
 				s.ProcessPostTask(sw.Payload.PipelineId, sw.Payload.TaskId, t.Config.DownstreamTaskId, t.Config.DownstreamWebhook)
 			}()
@@ -132,9 +142,12 @@ func (s *Scheduler) GhWebhookHandler() gin.HandlerFunc {
 
 		t := plRes.Payload.Pipeline.Tasks[0]
 
+		cbs, _ := json.Marshal(data.Commits)
+		cbsStr := string(cbs)
+
 		if t != nil {
 			go func() {
-				s.ProcessPreTask(plRes.Payload.Pipeline.Id, t.Id)
+				s.ProcessPreTask(plRes.Payload.Pipeline.Id, t.Id, &cbsStr)
 				s.runner.DoTask(*t)
 				s.ProcessPostTask(plRes.Payload.Pipeline.Id, t.Id, t.Config.DownstreamTaskId, t.Config.DownstreamWebhook)
 			}()

@@ -1,14 +1,27 @@
 <div>
 <h1>Pipelines</h1>
 {{range .}}
-<div>ID: <b>{{.Id2Hex}}</b> Name: <b>{{.Name}}</b> Status: <b>{{.Status}}</b></div>
+<div>Name: <b>{{.Name}}</b> Status: <b>{{.Status}}</b></div>
+<ul>
+    <li>ID: <b>{{.Id2Hex}}</b></li>
+    <li>Executed at: <b>{{.ExecutedAt2Str}}</b></li>
+    <li>Stopped at: <b>{{.StoppedAt2Str}}</b></li>
+</ul>
 <details>
     <summary>Tasks</summary>
-    <ul>
+    <ol>
     {{range .Tasks}}
-    <li style="margin-bottom:10px">ID: <b>{{.Id2Hex}}</b> Name: <b>{{.Name}}</b> Status: <b>{{.Status}}</b></li>
-    {{end}}
+    <li style="margin-bottom:10px">Name: <b>{{.Name}}</b> Status: <b>{{.Status}}</b> <span style="margin-left: 20px"><button onclick="alert(`Don't be silly, my friend!`)">RUN</button> <button  onclick="alert(`Not yet implemented.`)">EDIT</button></span></li>
+    <ul>
+        <li>ID: <b>{{.Id2Hex}}</b></li>
+        <li>Executed at: <b>{{.ExecutedAt2Str}}</b></li>
+        <li>Stopped at: <b>{{.StoppedAt2Str}}</b></li>
+        <li>Remarks: <b>{{.Remarks}}</b></li>
     </ul>
+    <br>
+    {{end}}
+    </ol>
+
 </details>
 <hr>
 {{end}}
