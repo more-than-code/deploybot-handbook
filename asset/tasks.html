@@ -16,7 +16,11 @@
         <li>ID: <b>{{.Id2Hex}}</b></li>
         <li>Executed at: <b>{{.ExecutedAt2Str}}</b></li>
         <li>Stopped at: <b>{{.StoppedAt2Str}}</b></li>
-        <li>Remarks: <p>{{.Remarks}}</p></li>
+        <li>Remarks: 
+            {{if .Remarks}}
+            <p>{{.Remarks}}</p>
+            {{end}}
+        </li>
         <li>Logs: <a href="#">N/A</a></li>
     </ul>
     <br>
