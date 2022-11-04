@@ -1,64 +1,8 @@
-<h1>{{.Title1}}</h1>
+<div>
+<h1>Pipelines</h1>
+{{range .}}
+<div>ID: {{.Id2Hex}}   Name: {{.Name}} Status: {{.Status}}</div>
 <ul>
-    {{range .BuildTasks}}
-        <li id="{{.Id2Hex}}"><b>ID: {{.Id2Hex}}</b></li>
-        <li>Deploy task ID: <a  href="#{{.DeployTaskId2Hex}}">{{.DeployTaskId2Hex}}</a></li>
-        <li>Status: {{.Status}}</li>
-        <li>Created at: {{.CreatedAt2Str}}</li>
-        <li>Executed at: {{.ExecutedAt2Str}}</li>
-        <li>Stopped at: {{.StoppedAt2Str}}</li>
-        <li><details>
-            <summary>Commits</summary>
-            <ul>
-                {{range .Config.SourceConfig.Commits}}
-                <li>ID: {{.Id}}</li>
-                <li>Message: {{.Message}}</li>
-                <li>Timestamp: {{.Timestamp}}</li>
-                <li>URL: <a href="{{.Url}}">{{.Url}}</a></li>
-                <li>Committer:
-                    <ul>
-                     <li>name: {{.Committer.Name}}</li> 
-                     <li> email: {{.Committer.Email}}</li>
-                     <li>username: {{.Committer.Username}}</li>
-                    </ul>
-                {{end}}
-            </ul>
-            </details>
-        </li>
-    <br>
-    {{end}}
 </ul>
-<h1>{{.Title2}}</h1>
-<ul>
-    {{range .DeployTasks}}
-    <li id="{{.Id2Hex}}"><b>ID: {{.Id2Hex}}</b></li>
-    <li>Build task ID: <a  href="#{{.BuildTaskId2Hex}}">{{.BuildTaskId2Hex}}</a></li>
-    <li>Status: {{.Status}}</li>
-    <li>Created at: {{.CreatedAt2Str}}</li>
-    <li>Executed at: {{.ExecutedAt2Str}}</li>
-    <li>Stopped at: {{.StoppedAt2Str}}</li>
-    <li>
-        <details>
-            <summary>Config</summary>
-            <ul>
-                <li>Script: {{.Config.Script}}</li>
-                <li>Pre-install: {{.Config.PreInstall}}</li>
-                <li>Post-install: {{.Config.PostInstall}}</li>
-                {{if .Config.ContainerConfig}}
-                <li>Container config:
-                    <ul>
-                        <li>Image name: {{.Config.ContainerConfig.ImageName}}</li>
-                        <li>Image tag: {{.Config.ContainerConfig.ImageTag}}</li>
-                        <li>Service name: {{.Config.ContainerConfig.ServiceName}}</li>
-                        <li>Mounts: {{.Config.ContainerConfig.Mounts}}</li>
-                        <li>Auto remove: {{.Config.ContainerConfig.AutoRemove}}</li>
-                    </ul>
-                </li>
-                {{end}}
-            </ul>
-        </details>
-        
-    </li>
-    <br>
 {{end}}
-</ul>
+</div>

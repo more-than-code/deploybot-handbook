@@ -43,3 +43,27 @@ type UpdatePipelineStatusInput struct {
 	PipelineId primitive.ObjectID
 	Payload    UpdatePipelineStatusInputPayload
 }
+
+func (p Pipeline) Id2Hex() string {
+	return p.Id.Hex()
+}
+
+func (p Pipeline) CreatedAt2Str() string {
+	return p.CreatedAt.Time().String()
+}
+
+func (p Pipeline) ExecutedAt2Str() string {
+	if p.ExecutedAt == 0 {
+		return ""
+	}
+
+	return p.ExecutedAt.Time().String()
+}
+
+func (p Pipeline) StoppedAt2Str() string {
+	if p.StoppedAt == 0 {
+		return ""
+	}
+
+	return p.StoppedAt.Time().String()
+}
