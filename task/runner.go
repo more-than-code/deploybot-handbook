@@ -1,6 +1,7 @@
 package task
 
 import (
+	"io"
 	"log"
 	"os/exec"
 
@@ -17,8 +18,12 @@ func NewRunner() *Runner {
 func (r *Runner) DoTask(t model.Task) error {
 	if t.Config.Script != "" {
 		cmd := exec.Command("sh", "-c", t.Config.Script)
-		output, err := cmd.Output()
+		stdout, _ := cmd.StdoutPipe()
+
+		output, _ := io.ReadAll(stdout)
 		log.Println(string(output))
+
+		err := cmd.Start()
 		if err != nil {
 			return err
 		}

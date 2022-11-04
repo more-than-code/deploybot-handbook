@@ -88,6 +88,7 @@ func (r *Repository) UpdateTaskStatus(ctx context.Context, input *model.UpdateTa
 	switch input.Payload.Status {
 	case model.TaskInProgress:
 		doc["tasks.$.executedat"] = primitive.NewDateTimeFromTime(time.Now().UTC())
+		doc["tasks.$.stoppedat"] = nil
 	case model.TaskDone, model.TaskFailed, model.TaskCanceled:
 		doc["tasks.$.stoppedat"] = primitive.NewDateTimeFromTime(time.Now().UTC())
 	}
