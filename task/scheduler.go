@@ -140,18 +140,24 @@ func (s *Scheduler) GhWebhookHandler() gin.HandlerFunc {
 		var plRes api.GetPipelineResponse
 		json.Unmarshal(body, &plRes)
 
+		if plRes.Payload.Pipeline == nil {
+			return
+		}
+
 		t := plRes.Payload.Pipeline.Tasks[0]
 
 		cbs, _ := json.Marshal(data.Commits)
 		cbsStr := string(cbs)
 
-		if t != nil {
-			go func() {
-				s.ProcessPreTask(plRes.Payload.Pipeline.Id, t.Id, &cbsStr)
-				s.runner.DoTask(*t)
-				s.ProcessPostTask(plRes.Payload.Pipeline.Id, t.Id, t.Config.DownstreamTaskId, t.Config.DownstreamWebhook)
-			}()
+		if t == nil {
+			return
 		}
+
+		go func() {
+			s.ProcessPreTask(plRes.Payload.Pipeline.Id, t.Id, &cbsStr)
+			s.runner.DoTask(*t)
+			s.ProcessPostTask(plRes.Payload.Pipeline.Id, t.Id, t.Config.DownstreamTaskId, t.Config.DownstreamWebhook)
+		}()
 	}
 }
 
