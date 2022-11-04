@@ -91,7 +91,7 @@ func (r *Repository) UpdatePipelineStatus(ctx context.Context, input *model.Upda
 	switch input.Payload.Status {
 	case model.PipelineBusy:
 		doc["executedat"] = primitive.NewDateTimeFromTime(time.Now().UTC())
-		doc["stoppedat"] = 0
+		doc["stoppedat"] = nil
 	case model.PipelineIdle:
 		doc["stoppedat"] = primitive.NewDateTimeFromTime(time.Now().UTC())
 	}

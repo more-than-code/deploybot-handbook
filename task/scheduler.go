@@ -132,8 +132,6 @@ func (s *Scheduler) GhWebhookHandler() gin.HandlerFunc {
 		var data model.GitHubHookshot
 		json.Unmarshal(body, &data)
 
-		log.Printf("%+v", data.Commits)
-
 		res, _ := http.Get(fmt.Sprintf("%s/pipeline/%s", s.cfg.ApiBaseUrl, data.Repository.Name))
 		body, _ = io.ReadAll(res.Body)
 
@@ -148,6 +146,8 @@ func (s *Scheduler) GhWebhookHandler() gin.HandlerFunc {
 
 		cbs, _ := json.Marshal(data.Commits)
 		cbsStr := string(cbs)
+
+		log.Printf("%s", cbsStr)
 
 		if t == nil {
 			return
