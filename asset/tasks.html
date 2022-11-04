@@ -3,9 +3,9 @@
 {{range .}}
 <div>Name: <b>{{.Name}}</b> Status: <b>{{.Status}}</b></div>
 <ul>
-    <li>ID: <b>{{.Id2Hex}}</b></li>
-    <li>Executed at: <b>{{.ExecutedAt2Str}}</b></li>
-    <li>Stopped at: <b>{{.StoppedAt2Str}}</b></li>
+    <li>ID: {{.Id2Hex}}</li>
+    <li>Executed at: {{.ExecutedAt2Str}}</li>
+    <li>Stopped at: {{.StoppedAt2Str}}</li>
 </ul>
 <details>
     <summary>Tasks</summary>
