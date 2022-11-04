@@ -58,8 +58,16 @@ func (r *Repository) UpdateTask(ctx context.Context, input *model.UpdateTaskInpu
 
 	doc := bson.M{}
 	doc["tasks.$.updatedat"] = primitive.NewDateTimeFromTime(time.Now().UTC())
-	doc["tasks.$.scheduledat"] = input.Payload.ScheduledAt
-	doc["tasks.$.config"] = input.Payload.Config
+
+	if input.Payload.Name != nil {
+		doc["tasks.$.name"] = input.Payload.Name
+	}
+	if input.Payload.ScheduledAt != nil {
+		doc["tasks.$.scheduledat"] = input.Payload.ScheduledAt
+	}
+	if input.Payload.Config != nil {
+		doc["tasks.$.config"] = input.Payload.Config
+	}
 
 	update := bson.M{"$set": doc}
 

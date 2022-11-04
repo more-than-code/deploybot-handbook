@@ -28,8 +28,8 @@ type GetPipelineInput struct {
 }
 
 type UpdatePipelineInputPayload struct {
-	Name        string
-	ScheduledAt primitive.DateTime `bson:",omitempty"`
+	Name        *string
+	ScheduledAt *primitive.DateTime `bson:",omitempty"`
 }
 type UpdatePipelineInput struct {
 	Id      primitive.ObjectID

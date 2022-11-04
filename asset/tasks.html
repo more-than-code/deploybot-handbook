@@ -1,8 +1,15 @@
 <div>
 <h1>Pipelines</h1>
 {{range .}}
-<div>ID: {{.Id2Hex}}   Name: {{.Name}} Status: {{.Status}}</div>
-<ul>
-</ul>
+<div>ID: <b>{{.Id2Hex}}</b> Name: <b>{{.Name}}</b> Status: <b>{{.Status}}</b></div>
+<details>
+    <summary>Tasks</summary>
+    <ul>
+    {{range .Tasks}}
+    <li style="margin-bottom:10px">ID: <b>{{.Id2Hex}}</b> Name: <b>{{.Name}}</b> Status: <b>{{.Status}}</b></li>
+    {{end}}
+    </ul>
+</details>
+<hr>
 {{end}}
 </div>
