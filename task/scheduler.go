@@ -87,12 +87,14 @@ func (s *Scheduler) ProcessPostTask(pipelineId, taskId, nextTaskId primitive.Obj
 	req, _ := http.NewRequest("PUT", s.cfg.ApiBaseUrl+"/taskStatus", bytes.NewReader(body))
 	http.DefaultClient.Do(req)
 
-	body, _ = json.Marshal(model.UpdatePipelineStatusInput{
-		PipelineId: pipelineId,
-		Payload:    model.UpdatePipelineStatusInputPayload{Status: model.PipelineIdle}})
+	if nextTaskId.IsZero() {
+		body, _ = json.Marshal(model.UpdatePipelineStatusInput{
+			PipelineId: pipelineId,
+			Payload:    model.UpdatePipelineStatusInputPayload{Status: model.PipelineIdle}})
 
-	req, _ = http.NewRequest("PUT", s.cfg.ApiBaseUrl+"/pipelineStatus", bytes.NewReader(body))
-	http.DefaultClient.Do(req)
+		req, _ = http.NewRequest("PUT", s.cfg.ApiBaseUrl+"/pipelineStatus", bytes.NewReader(body))
+		http.DefaultClient.Do(req)
+	}
 
 	body, _ = json.Marshal(model.StreamWebhook{Payload: model.StreamWebhookPayload{PipelineId: pipelineId, TaskId: nextTaskId}})
 	http.Post(webhook, "application/json", bytes.NewReader(body))
