@@ -144,6 +144,7 @@ func (s *Scheduler) GhWebhookHandler() gin.HandlerFunc {
 		}
 
 		if plRes.Payload.Pipeline == nil {
+			ctx.JSON(api.ExHttpStatusBusinessLogicError, api.WebhookResponse{Code: api.CodeClientError, Msg: api.MsgPipelineNotFound})
 			return
 		}
 
@@ -155,6 +156,7 @@ func (s *Scheduler) GhWebhookHandler() gin.HandlerFunc {
 		log.Printf("%s", cbsStr)
 
 		if t == nil {
+			ctx.JSON(api.ExHttpStatusBusinessLogicError, api.WebhookResponse{Code: api.CodeClientError, Msg: api.MsgTaskNotFound})
 			return
 		}
 

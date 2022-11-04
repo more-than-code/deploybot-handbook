@@ -16,7 +16,9 @@ const (
 )
 
 const (
-	MsgPipelineBusy = "Pipleline busy"
+	MsgPipelineBusy     = "Pipleline busy"
+	MsgPipelineNotFound = "Pipleline not found"
+	MsgTaskNotFound     = "Task not found"
 )
 
 type PostPipelineResponsePayload struct {
