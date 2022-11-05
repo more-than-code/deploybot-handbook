@@ -150,13 +150,13 @@ func (s *Scheduler) GhWebhookHandler() gin.HandlerFunc {
 		var plRes api.GetPipelineResponse
 		json.Unmarshal(body, &plRes)
 
-		if plRes.Payload.Pipeline.Status == model.PipelineBusy {
-			ctx.JSON(api.ExHttpStatusBusinessLogicError, api.WebhookResponse{Code: api.CodePipelineBusy, Msg: api.MsgPipelineBusy})
+		if plRes.Payload.Pipeline == nil {
+			ctx.JSON(api.ExHttpStatusBusinessLogicError, api.WebhookResponse{Code: api.CodePipelineNotFound, Msg: api.MsgPipelineNotFound})
 			return
 		}
 
-		if plRes.Payload.Pipeline == nil {
-			ctx.JSON(api.ExHttpStatusBusinessLogicError, api.WebhookResponse{Code: api.CodePipelineNotFound, Msg: api.MsgPipelineNotFound})
+		if plRes.Payload.Pipeline.Status == model.PipelineBusy {
+			ctx.JSON(api.ExHttpStatusBusinessLogicError, api.WebhookResponse{Code: api.CodePipelineBusy, Msg: api.MsgPipelineBusy})
 			return
 		}
 
