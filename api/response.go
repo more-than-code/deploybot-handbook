@@ -11,14 +11,23 @@ const (
 )
 
 const (
-	CodeClientError = 1000
+	CodeClientError      = 1000
+	CodePipelineBusy     = 1100
+	CodePipelineNotFound = 1101
+	CodeTaskBusy         = 1102
+	CodeTaskNotFound     = 1103
+
 	CodeServerError = 2000
 )
 
 const (
+	MsgClientError      = "Client error"
 	MsgPipelineBusy     = "Pipleline busy"
 	MsgPipelineNotFound = "Pipleline not found"
+	MsgTaskBusy         = "Task not found"
 	MsgTaskNotFound     = "Task not found"
+
+	MsgServerError = "Server error"
 )
 
 type PostPipelineResponsePayload struct {

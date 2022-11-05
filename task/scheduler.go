@@ -117,13 +117,23 @@ func (s *Scheduler) StreamWebhookHandler() gin.HandlerFunc {
 
 		t := ptRes.Payload.Task
 
-		if t != nil {
-			go func() {
-				s.ProcessPreTask(sw.Payload.PipelineId, sw.Payload.TaskId, sw.Payload.Remarks)
-				s.runner.DoTask(*t)
-				s.ProcessPostTask(sw.Payload.PipelineId, sw.Payload.TaskId, t.Config.DownstreamTaskId, t.Config.DownstreamWebhook)
-			}()
+		if t == nil {
+			ctx.JSON(api.ExHttpStatusBusinessLogicError, api.WebhookResponse{Code: api.CodeTaskNotFound, Msg: api.MsgTaskNotFound})
+			return
 		}
+
+		if t.Status == model.TaskInProgress {
+			ctx.JSON(api.ExHttpStatusBusinessLogicError, api.WebhookResponse{Code: api.CodeTaskBusy, Msg: api.MsgTaskBusy})
+			return
+		}
+
+		go func() {
+			s.ProcessPreTask(sw.Payload.PipelineId, sw.Payload.TaskId, sw.Payload.Remarks)
+			s.runner.DoTask(*t)
+			s.ProcessPostTask(sw.Payload.PipelineId, sw.Payload.TaskId, t.Config.DownstreamTaskId, t.Config.DownstreamWebhook)
+		}()
+
+		ctx.JSON(http.StatusOK, api.WebhookResponse{})
 	}
 }
 
@@ -141,12 +151,12 @@ func (s *Scheduler) GhWebhookHandler() gin.HandlerFunc {
 		json.Unmarshal(body, &plRes)
 
 		if plRes.Payload.Pipeline.Status == model.PipelineBusy {
-			ctx.JSON(api.ExHttpStatusBusinessLogicError, api.WebhookResponse{Code: api.CodeClientError, Msg: api.MsgPipelineBusy})
+			ctx.JSON(api.ExHttpStatusBusinessLogicError, api.WebhookResponse{Code: api.CodePipelineBusy, Msg: api.MsgPipelineBusy})
 			return
 		}
 
 		if plRes.Payload.Pipeline == nil {
-			ctx.JSON(api.ExHttpStatusBusinessLogicError, api.WebhookResponse{Code: api.CodeClientError, Msg: api.MsgPipelineNotFound})
+			ctx.JSON(api.ExHttpStatusBusinessLogicError, api.WebhookResponse{Code: api.CodePipelineNotFound, Msg: api.MsgPipelineNotFound})
 			return
 		}
 
@@ -158,7 +168,7 @@ func (s *Scheduler) GhWebhookHandler() gin.HandlerFunc {
 		log.Printf("%s", cbsStr)
 
 		if t == nil {
-			ctx.JSON(api.ExHttpStatusBusinessLogicError, api.WebhookResponse{Code: api.CodeClientError, Msg: api.MsgTaskNotFound})
+			ctx.JSON(api.ExHttpStatusBusinessLogicError, api.WebhookResponse{Code: api.CodeTaskNotFound, Msg: api.MsgTaskNotFound})
 			return
 		}
 
@@ -167,6 +177,8 @@ func (s *Scheduler) GhWebhookHandler() gin.HandlerFunc {
 			s.runner.DoTask(*t)
 			s.ProcessPostTask(plRes.Payload.Pipeline.Id, t.Id, t.Config.DownstreamTaskId, t.Config.DownstreamWebhook)
 		}()
+
+		ctx.JSON(http.StatusOK, api.WebhookResponse{})
 	}
 }
 
