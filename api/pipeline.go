@@ -60,8 +60,8 @@ func (a *Api) GetPipelines() gin.HandlerFunc {
 
 func (a *Api) GetPipeline() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		url := ctx.Param("url")
-		input := model.GetPipelineInput{RepoUrlWatched: url}
+		name := ctx.Param("name")
+		input := model.GetPipelineInput{RepoWatched: name}
 		pl, err := a.repo.GetPipeline(ctx, &input)
 
 		if err != nil {

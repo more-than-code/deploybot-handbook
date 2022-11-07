@@ -30,7 +30,7 @@ type CreatePipelineInput struct {
 }
 
 type GetPipelineInput struct {
-	RepoUrlWatched string
+	RepoWatched string
 }
 
 type UpdatePipelineInputPayload struct {

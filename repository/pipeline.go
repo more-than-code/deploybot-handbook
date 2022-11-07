@@ -58,7 +58,7 @@ func (r *Repository) GetPipelines(ctx context.Context) ([]*model.Pipeline, error
 func (r *Repository) GetPipeline(ctx context.Context, input *model.GetPipelineInput) (*model.Pipeline, error) {
 	coll := r.mongoClient.Database("pipeline").Collection("pipelines")
 
-	filter := bson.M{"config.repourlwatched": input.RepoUrlWatched}
+	filter := bson.M{"config.repowatched": input.RepoWatched}
 
 	var pipeline model.Pipeline
 	err := coll.FindOne(ctx, filter).Decode(&pipeline)

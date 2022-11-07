@@ -32,7 +32,7 @@ func main() {
 		g.GET("/", api.DashboardHandler())
 
 		g.GET("/api/pipelines", api.GetPipelines())
-		g.GET("/api/pipeline/:url", api.GetPipeline())
+		g.GET("/api/pipeline/:name", api.GetPipeline())
 		g.POST("/api/pipeline", api.PostPipeline())
 		g.PATCH("/api/pipeline", api.PatchPipeline())
 		g.PUT("/api/pipelineStatus", api.PutPipelineStatus())
