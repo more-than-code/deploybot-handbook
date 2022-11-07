@@ -40,13 +40,13 @@ func (r *Repository) GetPipelines(ctx context.Context, input model.GetPipelinesI
 
 	filter := bson.M{}
 	if input.RepoWatched != nil {
-		filter["config.repowatched"] = input.RepoWatched
+		filter["config.repowatched"] = *input.RepoWatched
 	}
 	if input.AutoRun != nil {
-		filter["config.autorun"] = input.AutoRun
+		filter["config.autorun"] = *input.AutoRun
 	}
 
-	opts := options.Find().SetSort(bson.D{{"updatedat", -1}})
+	opts := options.Find().SetSort(bson.D{{"executedat", -1}})
 	cursor, err := coll.Find(ctx, filter, opts)
 
 	if err != nil {

@@ -48,19 +48,25 @@ func (a *Api) PostPipeline() gin.HandlerFunc {
 
 func (a *Api) GetPipelines() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		_, exists := ctx.GetQuery("repoWatched")
-		var repoWatched string
+		repoWatched, exists := ctx.GetQuery("repoWatched")
+
+		var rw *string
 		if exists {
-			repoWatched = ctx.GetString("repoWatched")
+			rw = &repoWatched
 		}
 
-		_, exists = ctx.GetQuery("autoRun")
-		var autoRun bool
+		autoRun, exists := ctx.GetQuery("autoRun")
+		var ar *bool
 		if exists {
-			autoRun = ctx.GetBool("autoRun")
+			cVal := false
+			if autoRun == "true" {
+				cVal = true
+			}
+
+			ar = &cVal
 		}
 
-		pls, err := a.repo.GetPipelines(ctx, model.GetPipelinesInput{RepoWatched: &repoWatched, AutoRun: &autoRun})
+		pls, err := a.repo.GetPipelines(ctx, model.GetPipelinesInput{RepoWatched: rw, AutoRun: ar})
 
 		if err != nil {
 			ctx.JSON(http.StatusBadRequest, GetPipelinesResponse{Code: CodeClientError, Msg: err.Error()})
