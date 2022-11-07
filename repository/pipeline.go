@@ -35,10 +35,16 @@ func (r *Repository) DeletePipeline(ctx context.Context, id primitive.ObjectID) 
 	return err
 }
 
-func (r *Repository) GetPipelines(ctx context.Context) ([]*model.Pipeline, error) {
+func (r *Repository) GetPipelines(ctx context.Context, input model.GetPipelinesInput) ([]*model.Pipeline, error) {
 	coll := r.mongoClient.Database("pipeline").Collection("pipelines")
 
 	filter := bson.M{}
+	if input.RepoWatched != nil {
+		filter["config.repowatched"] = input.RepoWatched
+	}
+	if input.AutoRun != nil {
+		filter["config.autorun"] = input.AutoRun
+	}
 
 	opts := options.Find().SetSort(bson.D{{"updatedat", -1}})
 	cursor, err := coll.Find(ctx, filter, opts)
@@ -58,7 +64,7 @@ func (r *Repository) GetPipelines(ctx context.Context) ([]*model.Pipeline, error
 func (r *Repository) GetPipeline(ctx context.Context, input *model.GetPipelineInput) (*model.Pipeline, error) {
 	coll := r.mongoClient.Database("pipeline").Collection("pipelines")
 
-	filter := bson.M{"config.repowatched": input.RepoWatched}
+	filter := bson.M{"name": input.Name}
 
 	var pipeline model.Pipeline
 	err := coll.FindOne(ctx, filter).Decode(&pipeline)

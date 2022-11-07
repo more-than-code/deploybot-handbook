@@ -144,39 +144,37 @@ func (s *Scheduler) GhWebhookHandler() gin.HandlerFunc {
 		var data model.GitHubHookshot
 		json.Unmarshal(body, &data)
 
-		res, _ := http.Get(fmt.Sprintf("%s/pipeline/%s", s.cfg.ApiBaseUrl, data.Repository.CloneUrl))
+		res, _ := http.Get(fmt.Sprintf("%s/pipelines?repoWatched=%s&autoRun=true", s.cfg.ApiBaseUrl, data.Repository.Name))
 		body, _ = io.ReadAll(res.Body)
 
-		var plRes api.GetPipelineResponse
+		var plRes api.GetPipelinesResponse
 		json.Unmarshal(body, &plRes)
 
-		if plRes.Payload.Pipeline == nil {
-			ctx.JSON(api.ExHttpStatusBusinessLogicError, api.WebhookResponse{Code: api.CodePipelineNotFound, Msg: api.MsgPipelineNotFound})
-			return
+		for _, pl := range plRes.Payload.Pipelines {
+			if pl.Status == model.PipelineBusy {
+				ctx.JSON(api.ExHttpStatusBusinessLogicError, api.WebhookResponse{Code: api.CodePipelineBusy, Msg: api.MsgPipelineBusy})
+				continue
+			}
+
+			t := pl.Tasks[0]
+
+			cbs, _ := json.Marshal(data.Commits)
+			cbsStr := string(cbs)
+
+			log.Printf("%s", cbsStr)
+
+			if t == nil {
+				continue
+			}
+
+			pl2 := pl
+			go func() {
+				s.ProcessPreTask(pl2.Id, t.Id, &cbsStr)
+				s.runner.DoTask(*t)
+				s.ProcessPostTask(pl2.Id, t.Id, t.Config.DownstreamTaskId, t.Config.DownstreamWebhook)
+			}()
+
 		}
-
-		if plRes.Payload.Pipeline.Status == model.PipelineBusy {
-			ctx.JSON(api.ExHttpStatusBusinessLogicError, api.WebhookResponse{Code: api.CodePipelineBusy, Msg: api.MsgPipelineBusy})
-			return
-		}
-
-		t := plRes.Payload.Pipeline.Tasks[0]
-
-		cbs, _ := json.Marshal(data.Commits)
-		cbsStr := string(cbs)
-
-		log.Printf("%s", cbsStr)
-
-		if t == nil {
-			ctx.JSON(api.ExHttpStatusBusinessLogicError, api.WebhookResponse{Code: api.CodeTaskNotFound, Msg: api.MsgTaskNotFound})
-			return
-		}
-
-		go func() {
-			s.ProcessPreTask(plRes.Payload.Pipeline.Id, t.Id, &cbsStr)
-			s.runner.DoTask(*t)
-			s.ProcessPostTask(plRes.Payload.Pipeline.Id, t.Id, t.Config.DownstreamTaskId, t.Config.DownstreamWebhook)
-		}()
 
 		ctx.JSON(http.StatusOK, api.WebhookResponse{})
 	}

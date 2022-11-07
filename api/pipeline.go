@@ -48,7 +48,10 @@ func (a *Api) PostPipeline() gin.HandlerFunc {
 
 func (a *Api) GetPipelines() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		pls, err := a.repo.GetPipelines(ctx)
+		repoWatched := ctx.GetString("repoWatched")
+		autoRun := ctx.GetBool("autoRun")
+
+		pls, err := a.repo.GetPipelines(ctx, model.GetPipelinesInput{RepoWatched: &repoWatched, AutoRun: &autoRun})
 
 		if err != nil {
 			ctx.JSON(http.StatusBadRequest, GetPipelinesResponse{Code: CodeClientError, Msg: err.Error()})
@@ -62,7 +65,7 @@ func (a *Api) GetPipelines() gin.HandlerFunc {
 func (a *Api) GetPipeline() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		name := ctx.Param("name")
-		input := model.GetPipelineInput{RepoWatched: name}
+		input := model.GetPipelineInput{Name: name}
 		pl, err := a.repo.GetPipeline(ctx, &input)
 
 		if err != nil {

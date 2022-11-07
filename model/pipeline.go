@@ -30,7 +30,12 @@ type CreatePipelineInput struct {
 }
 
 type GetPipelineInput struct {
-	RepoWatched string
+	Name string
+}
+
+type GetPipelinesInput struct {
+	RepoWatched *string
+	AutoRun     *bool
 }
 
 type UpdatePipelineInputPayload struct {
