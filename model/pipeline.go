@@ -3,8 +3,8 @@ package model
 import "go.mongodb.org/mongo-driver/bson/primitive"
 
 type PipelineConfig struct {
-	RepoUrlWatched string
-	AutoRun        bool
+	RepoWatched string
+	AutoRun     bool
 }
 
 type Pipeline struct {
