@@ -45,7 +45,7 @@ func (a *Api) GetTask() gin.HandlerFunc {
 			return
 		}
 
-		ctx.JSON(http.StatusOK, GetTaskResponse{Payload: GetTaskResponsePayload{task}})
+		ctx.JSON(http.StatusOK, GetTaskResponse{Payload: GetTaskResponsePayload{Task: task}})
 	}
 }
 

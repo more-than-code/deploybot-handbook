@@ -8,6 +8,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -78,7 +79,7 @@ func (s *Scheduler) ProcessPreTask(pipelineId, taskId primitive.ObjectID, source
 	http.DefaultClient.Do(req)
 }
 
-func (s *Scheduler) ProcessPostTask(pipelineId, taskId, nextTaskId primitive.ObjectID, webhook string) {
+func (s *Scheduler) ProcessPostTask(pipelineId, taskId, nextTaskId primitive.ObjectID, webhook string, arguments []string) {
 	body, _ := json.Marshal(model.UpdateTaskStatusInput{
 		PipelineId: pipelineId,
 		TaskId:     taskId,
@@ -96,7 +97,7 @@ func (s *Scheduler) ProcessPostTask(pipelineId, taskId, nextTaskId primitive.Obj
 		http.DefaultClient.Do(req)
 	}
 
-	body, _ = json.Marshal(model.StreamWebhook{Payload: model.StreamWebhookPayload{PipelineId: pipelineId, TaskId: nextTaskId}})
+	body, _ = json.Marshal(model.StreamWebhook{Payload: model.StreamWebhookPayload{PipelineId: pipelineId, TaskId: nextTaskId, Arguments: arguments}})
 	http.Post(webhook, "application/json", bytes.NewReader(body))
 }
 
@@ -129,8 +130,8 @@ func (s *Scheduler) StreamWebhookHandler() gin.HandlerFunc {
 
 		go func() {
 			s.ProcessPreTask(sw.Payload.PipelineId, sw.Payload.TaskId, sw.Payload.Remarks)
-			s.runner.DoTask(*t)
-			s.ProcessPostTask(sw.Payload.PipelineId, sw.Payload.TaskId, t.Config.DownstreamTaskId, t.Config.DownstreamWebhook)
+			s.runner.DoTask(*t, sw.Payload.Arguments)
+			s.ProcessPostTask(sw.Payload.PipelineId, sw.Payload.TaskId, t.Config.DownstreamTaskId, t.Config.DownstreamWebhook, sw.Payload.Arguments)
 		}()
 
 		ctx.JSON(http.StatusOK, api.WebhookResponse{})
@@ -152,7 +153,6 @@ func (s *Scheduler) GhWebhookHandler() gin.HandlerFunc {
 
 		for _, pl := range plRes.Payload.Pipelines {
 			if pl.Status == model.PipelineBusy {
-				ctx.JSON(api.ExHttpStatusBusinessLogicError, api.WebhookResponse{Code: api.CodePipelineBusy, Msg: api.MsgPipelineBusy})
 				continue
 			}
 
@@ -167,11 +167,17 @@ func (s *Scheduler) GhWebhookHandler() gin.HandlerFunc {
 				continue
 			}
 
+			comps := strings.Split(data.Ref, "/")
+			args := []string{}
+			if len(comps) == 3 {
+				args = append(args, fmt.Sprintf("IMAGE_TAG=%s", comps[2]))
+			}
+
 			pl2 := pl
 			go func() {
 				s.ProcessPreTask(pl2.Id, t.Id, &cbsStr)
-				s.runner.DoTask(*t)
-				s.ProcessPostTask(pl2.Id, t.Id, t.Config.DownstreamTaskId, t.Config.DownstreamWebhook)
+				s.runner.DoTask(*t, args)
+				s.ProcessPostTask(pl2.Id, t.Id, t.Config.DownstreamTaskId, t.Config.DownstreamWebhook, args)
 			}()
 
 		}

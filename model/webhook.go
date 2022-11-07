@@ -87,6 +87,7 @@ type StreamWebhookPayload struct {
 	PipelineId primitive.ObjectID
 	TaskId     primitive.ObjectID
 	Remarks    *string
+	Arguments  []string
 }
 
 type StreamWebhook struct {

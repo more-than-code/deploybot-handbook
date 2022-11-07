@@ -8,6 +8,7 @@ type TaskConfig struct {
 	UpstreamWebhook   string             `bson:",omitempty"`
 	DownstreamWebhook string             `bson:",omitempty"`
 	Script            string
+	Secrets           []string `bson:",omitempty"`
 	AutoRun           bool
 }
 
