@@ -52,6 +52,7 @@ func (a *Api) GetPipelines() gin.HandlerFunc {
 
 		if err != nil {
 			ctx.JSON(http.StatusBadRequest, GetPipelinesResponse{Code: CodeClientError, Msg: err.Error()})
+			return
 		}
 
 		ctx.JSON(http.StatusOK, GetPipelinesResponse{Payload: GetPipelinesResponsePayload{pls}})
@@ -66,6 +67,7 @@ func (a *Api) GetPipeline() gin.HandlerFunc {
 
 		if err != nil {
 			ctx.JSON(http.StatusBadRequest, GetPipelineResponse{Code: CodeClientError, Msg: err.Error()})
+			return
 		}
 
 		ctx.JSON(http.StatusOK, GetPipelineResponse{Payload: GetPipelineResponsePayload{pl}})
