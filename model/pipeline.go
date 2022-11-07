@@ -22,7 +22,8 @@ type Pipeline struct {
 }
 
 type CreatePipelineInputPayload struct {
-	Name string
+	Name   string
+	Config PipelineConfig
 }
 
 type CreatePipelineInput struct {
