@@ -58,7 +58,7 @@ func (r *Repository) GetPipelines(ctx context.Context) ([]*model.Pipeline, error
 func (r *Repository) GetPipeline(ctx context.Context, input *model.GetPipelineInput) (*model.Pipeline, error) {
 	coll := r.mongoClient.Database("pipeline").Collection("pipelines")
 
-	filter := bson.M{"name": input.Name}
+	filter := bson.M{"config.repourlwatched": input.RepoUrlWatched}
 
 	var pipeline model.Pipeline
 	err := coll.FindOne(ctx, filter).Decode(&pipeline)
@@ -73,8 +73,18 @@ func (r *Repository) GetPipeline(ctx context.Context, input *model.GetPipelineIn
 func (r *Repository) UpdatePipeline(ctx context.Context, input *model.UpdatePipelineInput) error {
 	filter := bson.M{"_id": input.Id}
 
-	doc := util.StructToBsonDoc(input.Payload)
+	doc := bson.M{}
 	doc["updatedat"] = primitive.NewDateTimeFromTime(time.Now().UTC())
+
+	if input.Payload.Name != nil {
+		doc["name"] = input.Payload.Name
+	}
+	if input.Payload.ScheduledAt != nil {
+		doc["scheduledat"] = input.Payload.ScheduledAt
+	}
+	if input.Payload.Config != nil {
+		doc["config"] = input.Payload.Config
+	}
 
 	update := bson.M{"$set": doc}
 

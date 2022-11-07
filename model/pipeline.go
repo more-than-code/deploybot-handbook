@@ -2,6 +2,10 @@ package model
 
 import "go.mongodb.org/mongo-driver/bson/primitive"
 
+type PipelineConfig struct {
+	RepoUrlWatched string
+}
+
 type Pipeline struct {
 	Id          primitive.ObjectID `bson:"_id"`
 	Name        string
@@ -11,6 +15,7 @@ type Pipeline struct {
 	StoppedAt   primitive.DateTime
 	ScheduledAt primitive.DateTime
 	Status      string
+	Config      PipelineConfig
 
 	Tasks []*Task
 }
@@ -24,12 +29,13 @@ type CreatePipelineInput struct {
 }
 
 type GetPipelineInput struct {
-	Name string
+	RepoUrlWatched string
 }
 
 type UpdatePipelineInputPayload struct {
 	Name        *string
 	ScheduledAt *primitive.DateTime `bson:",omitempty"`
+	Config      *PipelineConfig
 }
 type UpdatePipelineInput struct {
 	Id      primitive.ObjectID

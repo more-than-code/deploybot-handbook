@@ -144,7 +144,7 @@ func (s *Scheduler) GhWebhookHandler() gin.HandlerFunc {
 		var data model.GitHubHookshot
 		json.Unmarshal(body, &data)
 
-		res, _ := http.Get(fmt.Sprintf("%s/pipeline/%s", s.cfg.ApiBaseUrl, data.Repository.Name))
+		res, _ := http.Get(fmt.Sprintf("%s/pipeline/%s", s.cfg.ApiBaseUrl, data.Repository.CloneUrl))
 		body, _ = io.ReadAll(res.Body)
 
 		var plRes api.GetPipelineResponse
