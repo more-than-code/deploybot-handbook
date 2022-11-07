@@ -48,8 +48,17 @@ func (a *Api) PostPipeline() gin.HandlerFunc {
 
 func (a *Api) GetPipelines() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		repoWatched := ctx.GetString("repoWatched")
-		autoRun := ctx.GetBool("autoRun")
+		_, exists := ctx.GetQuery("repoWatched")
+		var repoWatched string
+		if exists {
+			repoWatched = ctx.GetString("repoWatched")
+		}
+
+		_, exists = ctx.GetQuery("autoRun")
+		var autoRun bool
+		if exists {
+			autoRun = ctx.GetBool("autoRun")
+		}
 
 		pls, err := a.repo.GetPipelines(ctx, model.GetPipelinesInput{RepoWatched: &repoWatched, AutoRun: &autoRun})
 
