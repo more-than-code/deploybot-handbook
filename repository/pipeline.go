@@ -40,10 +40,10 @@ func (r *Repository) GetPipelines(ctx context.Context, input model.GetPipelinesI
 
 	filter := bson.M{}
 	if input.RepoWatched != nil {
-		filter["repowatched"] = *input.RepoWatched
+		filter["repowatched"] = input.RepoWatched
 	}
 	if input.AutoRun != nil {
-		filter["autorun"] = *input.AutoRun
+		filter["autorun"] = input.AutoRun
 	}
 
 	opts := options.Find().SetSort(bson.D{{"executedat", -1}})
