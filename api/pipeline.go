@@ -61,6 +61,8 @@ func (a *Api) GetPipelines() gin.HandlerFunc {
 			cVal := false
 			if autoRun == "true" {
 				cVal = true
+			} else {
+				cVal = false
 			}
 
 			ar = &cVal
