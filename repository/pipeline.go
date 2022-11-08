@@ -40,10 +40,10 @@ func (r *Repository) GetPipelines(ctx context.Context, input model.GetPipelinesI
 
 	filter := bson.M{}
 	if input.RepoWatched != nil {
-		filter["config.repowatched"] = *input.RepoWatched
+		filter["repowatched"] = *input.RepoWatched
 	}
 	if input.AutoRun != nil {
-		filter["config.autorun"] = *input.AutoRun
+		filter["autorun"] = *input.AutoRun
 	}
 
 	opts := options.Find().SetSort(bson.D{{"executedat", -1}})
@@ -61,10 +61,22 @@ func (r *Repository) GetPipelines(ctx context.Context, input model.GetPipelinesI
 	return pipelines, nil
 }
 
-func (r *Repository) GetPipeline(ctx context.Context, input *model.GetPipelineInput) (*model.Pipeline, error) {
+func (r *Repository) GetPipeline(ctx context.Context, input model.GetPipelineInput) (*model.Pipeline, error) {
 	coll := r.mongoClient.Database("pipeline").Collection("pipelines")
 
-	filter := bson.M{"name": input.Name}
+	filter := bson.M{}
+	if input.Id != nil {
+		filter["_id"] = input.Id
+	}
+	if input.Name != nil {
+		filter["name"] = input.Name
+	}
+	if input.TaskFilter.UpstreamTaskId != nil {
+		filter["tasks.upstreamtaskid"] = input.TaskFilter.UpstreamTaskId
+	}
+	if input.TaskFilter.AutoRun != nil {
+		filter["tasks.autorun"] = input.TaskFilter.AutoRun
+	}
 
 	var pipeline model.Pipeline
 	err := coll.FindOne(ctx, filter).Decode(&pipeline)
@@ -76,7 +88,7 @@ func (r *Repository) GetPipeline(ctx context.Context, input *model.GetPipelineIn
 	return &pipeline, nil
 }
 
-func (r *Repository) UpdatePipeline(ctx context.Context, input *model.UpdatePipelineInput) error {
+func (r *Repository) UpdatePipeline(ctx context.Context, input model.UpdatePipelineInput) error {
 	filter := bson.M{"_id": input.Id}
 
 	doc := bson.M{}
@@ -88,8 +100,14 @@ func (r *Repository) UpdatePipeline(ctx context.Context, input *model.UpdatePipe
 	if input.Payload.ScheduledAt != nil {
 		doc["scheduledat"] = input.Payload.ScheduledAt
 	}
-	if input.Payload.Config != nil {
-		doc["config"] = input.Payload.Config
+	if input.Payload.AutoRun != nil {
+		doc["autorun"] = input.Payload.AutoRun
+	}
+	if input.Payload.Arguments != nil {
+		doc["arguments"] = input.Payload.Arguments
+	}
+	if input.Payload.RepoWatched != nil {
+		doc["repowatched"] = input.Payload.RepoWatched
 	}
 
 	update := bson.M{"$set": doc}
@@ -100,7 +118,7 @@ func (r *Repository) UpdatePipeline(ctx context.Context, input *model.UpdatePipe
 	return err
 }
 
-func (r *Repository) UpdatePipelineStatus(ctx context.Context, input *model.UpdatePipelineStatusInput) error {
+func (r *Repository) UpdatePipelineStatus(ctx context.Context, input model.UpdatePipelineStatusInput) error {
 	filter := bson.M{"_id": input.PipelineId}
 
 	doc := bson.M{"status": input.Payload.Status}

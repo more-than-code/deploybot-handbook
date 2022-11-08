@@ -1,6 +1,8 @@
 package api
 
 import (
+	"bytes"
+	"encoding/json"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -59,7 +61,7 @@ func (a *Api) PatchTask() gin.HandlerFunc {
 			return
 		}
 
-		err = a.repo.UpdateTask(ctx, &input)
+		err = a.repo.UpdateTask(ctx, input)
 
 		if err != nil {
 			ctx.JSON(http.StatusBadRequest, PatchTaskResponse{Code: CodeServerError, Msg: err.Error()})
@@ -88,5 +90,25 @@ func (a *Api) PutTaskStatus() gin.HandlerFunc {
 		}
 
 		ctx.JSON(http.StatusOK, PutTaskStatusResponse{})
+
+		go func() {
+			if input.Payload.Status == model.TaskDone {
+				autoRun := true
+				pl, _ := a.repo.GetPipeline(ctx, model.GetPipelineInput{Id: &input.PipelineId, TaskFilter: model.TaskFilter{UpstreamTaskId: &input.TaskId, AutoRun: &autoRun}})
+
+				if len(pl.Tasks) == 0 {
+					a.repo.UpdatePipelineStatus(ctx, model.UpdatePipelineStatusInput{PipelineId: input.PipelineId, Payload: model.UpdatePipelineStatusInputPayload{Status: model.PipelineIdle}})
+				} else {
+					for _, t := range pl.Tasks {
+						body, _ := json.Marshal(model.StreamWebhook{Payload: model.StreamWebhookPayload{PipelineId: pl.Id, Task: t, Arguments: pl.Arguments}})
+						http.Post(t.StreamWebhook, "application/json", bytes.NewReader(body))
+					}
+				}
+			} else if input.Payload.Status == model.TaskInProgress {
+				a.repo.UpdatePipelineStatus(ctx, model.UpdatePipelineStatusInput{PipelineId: input.PipelineId, Payload: model.UpdatePipelineStatusInputPayload{Status: model.PipelineBusy}})
+			} else {
+				a.repo.UpdatePipelineStatus(ctx, model.UpdatePipelineStatusInput{PipelineId: input.PipelineId, Payload: model.UpdatePipelineStatusInputPayload{Status: model.PipelineIdle}})
+			}
+		}()
 	}
 }

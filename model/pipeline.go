@@ -2,11 +2,6 @@ package model
 
 import "go.mongodb.org/mongo-driver/bson/primitive"
 
-type PipelineConfig struct {
-	RepoWatched string
-	AutoRun     bool
-}
-
 type Pipeline struct {
 	Id          primitive.ObjectID `bson:"_id"`
 	Name        string
@@ -16,22 +11,32 @@ type Pipeline struct {
 	StoppedAt   primitive.DateTime
 	ScheduledAt primitive.DateTime
 	Status      string
-	Config      PipelineConfig
-
-	Tasks []*Task
+	Arguments   []string
+	Tasks       []Task
+	RepoWatched string
+	AutoRun     bool
 }
 
 type CreatePipelineInputPayload struct {
-	Name   string
-	Config PipelineConfig
+	Name        string
+	Arguments   []string
+	RepoWatched string
+	AutoRun     bool
 }
 
 type CreatePipelineInput struct {
 	Payload CreatePipelineInputPayload
 }
 
+type TaskFilter struct {
+	UpstreamTaskId *primitive.ObjectID
+	AutoRun        *bool
+}
+
 type GetPipelineInput struct {
-	Name string
+	Id         *primitive.ObjectID
+	Name       *string
+	TaskFilter TaskFilter
 }
 
 type GetPipelinesInput struct {
@@ -42,7 +47,9 @@ type GetPipelinesInput struct {
 type UpdatePipelineInputPayload struct {
 	Name        *string
 	ScheduledAt *primitive.DateTime `bson:",omitempty"`
-	Config      *PipelineConfig
+	Arguments   []string
+	RepoWatched *string
+	AutoRun     *bool
 }
 type UpdatePipelineInput struct {
 	Id      primitive.ObjectID

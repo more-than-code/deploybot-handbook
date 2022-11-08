@@ -2,34 +2,35 @@ package model
 
 import "go.mongodb.org/mongo-driver/bson/primitive"
 
-type TaskConfig struct {
-	UpstreamTaskId    primitive.ObjectID `bson:",omitempty"`
-	DownstreamTaskId  primitive.ObjectID `bson:",omitempty"`
-	UpstreamWebhook   string             `bson:",omitempty"`
-	DownstreamWebhook string             `bson:",omitempty"`
-	Script            string
-	Secrets           []string `bson:",omitempty"`
-	AutoRun           bool
+type TaskRunConfig struct {
+	Script  string
+	Secrets []string `bson:",omitempty"`
 }
 
 type Task struct {
-	Id          primitive.ObjectID
-	Name        string
-	CreatedAt   primitive.DateTime
-	UpdatedAt   primitive.DateTime
-	ExecutedAt  primitive.DateTime
-	StoppedAt   primitive.DateTime
-	ScheduledAt primitive.DateTime
-	Status      string
-	Config      TaskConfig
-	Remarks     string
+	Id             primitive.ObjectID
+	Name           string
+	CreatedAt      primitive.DateTime
+	UpdatedAt      primitive.DateTime
+	ExecutedAt     primitive.DateTime
+	StoppedAt      primitive.DateTime
+	ScheduledAt    primitive.DateTime
+	Status         string
+	UpstreamTaskId primitive.ObjectID `bson:",omitempty"`
+	StreamWebhook  string             `bson:",omitempty"`
+	Config         TaskRunConfig
+	Remarks        string
+	AutoRun        bool
 }
 
 type UpdateTaskInputPayload struct {
-	Name        *string
-	ScheduledAt *primitive.DateTime
-	Config      *TaskConfig
-	Remarks     *string
+	Name           *string
+	UpstreamTaskId *primitive.ObjectID
+	StreamWebhook  *string
+	ScheduledAt    *primitive.DateTime
+	Config         *TaskRunConfig
+	Remarks        *string
+	AutoRun        *bool
 }
 type UpdateTaskInput struct {
 	PipelineId primitive.ObjectID
@@ -47,10 +48,13 @@ type UpdateTaskStatusInput struct {
 }
 
 type CreateTaskInputPayload struct {
-	Id          primitive.ObjectID
-	Name        string
-	ScheduledAt primitive.DateTime `bson:",omitempty"`
-	Config      TaskConfig
+	Id             primitive.ObjectID
+	Name           string
+	ScheduledAt    primitive.DateTime `bson:",omitempty"`
+	Config         TaskRunConfig
+	UpstreamTaskId primitive.ObjectID `bson:",omitempty"`
+	StreamWebhook  string
+	AutoRun        bool
 }
 type CreateTaskInput struct {
 	PipelineId primitive.ObjectID
@@ -60,6 +64,11 @@ type CreateTaskInput struct {
 type GetTaskInput struct {
 	PipelineId primitive.ObjectID
 	Id         primitive.ObjectID
+}
+
+type GetTasksInput struct {
+	PipelineId     primitive.ObjectID
+	UpstreamTaskId *primitive.ObjectID
 }
 
 type DeleteTaskInput struct {
@@ -72,19 +81,11 @@ func (t Task) Id2Hex() string {
 }
 
 func (t Task) UpstreamtaskId2Hex() string {
-	if t.Config.UpstreamTaskId.IsZero() {
+	if t.UpstreamTaskId.IsZero() {
 		return ""
 	}
 
-	return t.Config.UpstreamTaskId.Hex()
-}
-
-func (t Task) DownstreamtaskId2Hex() string {
-	if t.Config.DownstreamTaskId.IsZero() {
-		return ""
-	}
-
-	return t.Config.DownstreamTaskId.Hex()
+	return t.UpstreamTaskId.Hex()
 }
 
 func (t Task) CreatedAt2Str() string {

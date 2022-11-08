@@ -41,7 +41,25 @@ func (r *Repository) GetTask(ctx context.Context, input *model.GetTaskInput) (*m
 		return nil, err
 	}
 
-	return pipeline.Tasks[0], nil
+	return &pipeline.Tasks[0], nil
+}
+
+func (r *Repository) GetTasks(ctx context.Context, input model.GetTasksInput) ([]model.Task, error) {
+	coll := r.mongoClient.Database("pipeline").Collection("pipelines")
+	filter := bson.M{"_id": input.PipelineId}
+
+	if input.UpstreamTaskId != nil {
+		filter["tasks.upstreamtaskid"] = input.UpstreamTaskId
+	}
+
+	var pipeline model.Pipeline
+	err := coll.FindOne(ctx, filter).Decode(&pipeline)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return pipeline.Tasks, nil
 }
 
 func (r *Repository) DeleteTask(ctx context.Context, input *model.DeleteTaskInput) error {
@@ -53,7 +71,7 @@ func (r *Repository) DeleteTask(ctx context.Context, input *model.DeleteTaskInpu
 	return err
 }
 
-func (r *Repository) UpdateTask(ctx context.Context, input *model.UpdateTaskInput) error {
+func (r *Repository) UpdateTask(ctx context.Context, input model.UpdateTaskInput) error {
 	filter := bson.M{"_id": input.PipelineId, "tasks.id": input.Id}
 
 	doc := bson.M{}
@@ -70,6 +88,15 @@ func (r *Repository) UpdateTask(ctx context.Context, input *model.UpdateTaskInpu
 	}
 	if input.Payload.Remarks != nil {
 		doc["tasks.$.remarks"] = input.Payload.Remarks
+	}
+	if input.Payload.AutoRun != nil {
+		doc["tasks.$.autorun"] = input.Payload.AutoRun
+	}
+	if input.Payload.StreamWebhook != nil {
+		doc["tasks.$.streamwebhook"] = input.Payload.StreamWebhook
+	}
+	if input.Payload.UpstreamTaskId != nil {
+		doc["tasks.$.upstreamtaskid"] = input.Payload.UpstreamTaskId
 	}
 
 	update := bson.M{"$set": doc}

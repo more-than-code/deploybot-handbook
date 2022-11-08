@@ -52,7 +52,7 @@ func (s *Scheduler) PullEvent() model.Event {
 	return e.Value.(model.Event)
 }
 
-func (s *Scheduler) ProcessPreTask(pipelineId, taskId primitive.ObjectID, sourceRef *string) {
+func (s *Scheduler) ProcessPreTask(pipelineId, taskId primitive.ObjectID) {
 	body, _ := json.Marshal(model.UpdateTaskStatusInput{
 		PipelineId: pipelineId,
 		TaskId:     taskId,
@@ -60,26 +60,9 @@ func (s *Scheduler) ProcessPreTask(pipelineId, taskId primitive.ObjectID, source
 
 	req, _ := http.NewRequest("PUT", s.cfg.ApiBaseUrl+"/taskStatus", bytes.NewReader(body))
 	http.DefaultClient.Do(req)
-
-	if sourceRef != nil {
-		body, _ = json.Marshal(model.UpdateTaskInput{
-			PipelineId: pipelineId,
-			Id:         taskId,
-			Payload:    model.UpdateTaskInputPayload{Remarks: sourceRef}})
-
-		req, _ = http.NewRequest("PATCH", s.cfg.ApiBaseUrl+"/task", bytes.NewReader(body))
-		http.DefaultClient.Do(req)
-	}
-
-	body, _ = json.Marshal(model.UpdatePipelineStatusInput{
-		PipelineId: pipelineId,
-		Payload:    model.UpdatePipelineStatusInputPayload{Status: model.PipelineBusy}})
-
-	req, _ = http.NewRequest("PUT", s.cfg.ApiBaseUrl+"/pipelineStatus", bytes.NewReader(body))
-	http.DefaultClient.Do(req)
 }
 
-func (s *Scheduler) ProcessPostTask(pipelineId, taskId, nextTaskId primitive.ObjectID, webhook string, arguments []string) {
+func (s *Scheduler) ProcessPostTask(pipelineId, taskId primitive.ObjectID) {
 	body, _ := json.Marshal(model.UpdateTaskStatusInput{
 		PipelineId: pipelineId,
 		TaskId:     taskId,
@@ -87,18 +70,6 @@ func (s *Scheduler) ProcessPostTask(pipelineId, taskId, nextTaskId primitive.Obj
 
 	req, _ := http.NewRequest("PUT", s.cfg.ApiBaseUrl+"/taskStatus", bytes.NewReader(body))
 	http.DefaultClient.Do(req)
-
-	if nextTaskId.IsZero() {
-		body, _ = json.Marshal(model.UpdatePipelineStatusInput{
-			PipelineId: pipelineId,
-			Payload:    model.UpdatePipelineStatusInputPayload{Status: model.PipelineIdle}})
-
-		req, _ = http.NewRequest("PUT", s.cfg.ApiBaseUrl+"/pipelineStatus", bytes.NewReader(body))
-		http.DefaultClient.Do(req)
-	}
-
-	body, _ = json.Marshal(model.StreamWebhook{Payload: model.StreamWebhookPayload{PipelineId: pipelineId, TaskId: nextTaskId, Arguments: arguments}})
-	http.Post(webhook, "application/json", bytes.NewReader(body))
 }
 
 func (s *Scheduler) StreamWebhookHandler() gin.HandlerFunc {
@@ -108,30 +79,10 @@ func (s *Scheduler) StreamWebhookHandler() gin.HandlerFunc {
 		var sw model.StreamWebhook
 		json.Unmarshal(body, &sw)
 
-		url := fmt.Sprintf("%s/task/%s/%s", s.cfg.ApiBaseUrl, sw.Payload.PipelineId.Hex(), sw.Payload.TaskId.Hex())
-
-		res, _ := http.Get(url)
-		body, _ = io.ReadAll(res.Body)
-
-		var ptRes api.GetTaskResponse
-		json.Unmarshal(body, &ptRes)
-
-		t := ptRes.Payload.Task
-
-		if t == nil {
-			ctx.JSON(api.ExHttpStatusBusinessLogicError, api.WebhookResponse{Code: api.CodeTaskNotFound, Msg: api.MsgTaskNotFound})
-			return
-		}
-
-		if t.Status == model.TaskInProgress {
-			ctx.JSON(api.ExHttpStatusBusinessLogicError, api.WebhookResponse{Code: api.CodeTaskBusy, Msg: api.MsgTaskBusy})
-			return
-		}
-
 		go func() {
-			s.ProcessPreTask(sw.Payload.PipelineId, sw.Payload.TaskId, sw.Payload.Remarks)
-			s.runner.DoTask(*t, sw.Payload.Arguments)
-			s.ProcessPostTask(sw.Payload.PipelineId, sw.Payload.TaskId, t.Config.DownstreamTaskId, t.Config.DownstreamWebhook, sw.Payload.Arguments)
+			s.ProcessPreTask(sw.Payload.PipelineId, sw.Payload.Task.Id)
+			s.runner.DoTask(sw.Payload.Task, sw.Payload.Arguments)
+			s.ProcessPostTask(sw.Payload.PipelineId, sw.Payload.Task.Id)
 		}()
 
 		ctx.JSON(http.StatusOK, api.WebhookResponse{})
@@ -156,30 +107,41 @@ func (s *Scheduler) GhWebhookHandler() gin.HandlerFunc {
 				continue
 			}
 
+			if len(pl.Tasks) == 0 {
+				continue
+			}
+
 			t := pl.Tasks[0]
 
+			// update task
 			cbs, _ := json.Marshal(data.Commits)
 			cbsStr := string(cbs)
 
 			log.Printf("%s", cbsStr)
 
-			if t == nil {
-				continue
-			}
+			body, _ = json.Marshal(model.UpdateTaskInput{
+				PipelineId: pl.Id,
+				Id:         t.Id,
+				Payload:    model.UpdateTaskInputPayload{Remarks: &cbsStr}})
+			req, _ := http.NewRequest("PATCH", s.cfg.ApiBaseUrl+"/task", bytes.NewReader(body))
+			http.DefaultClient.Do(req)
 
+			// update pipeline
 			comps := strings.Split(data.Ref, "/")
 			args := []string{}
 			if len(comps) == 3 {
 				args = append(args, fmt.Sprintf("IMAGE_TAG=%s", comps[2]))
 			}
 
-			pl2 := pl
-			go func() {
-				s.ProcessPreTask(pl2.Id, t.Id, &cbsStr)
-				s.runner.DoTask(*t, args)
-				s.ProcessPostTask(pl2.Id, t.Id, t.Config.DownstreamTaskId, t.Config.DownstreamWebhook, args)
-			}()
+			body, _ = json.Marshal(model.UpdatePipelineInput{
+				Id:      pl.Id,
+				Payload: model.UpdatePipelineInputPayload{Arguments: args}})
+			req, _ = http.NewRequest("PATCH", s.cfg.ApiBaseUrl+"/pipeline", bytes.NewReader(body))
+			http.DefaultClient.Do(req)
 
+			// call stream webhook
+			body, _ = json.Marshal(model.StreamWebhook{Payload: model.StreamWebhookPayload{PipelineId: pl.Id, Task: t, Arguments: args}})
+			http.Post(t.StreamWebhook, "application/json", bytes.NewReader(body))
 		}
 
 		ctx.JSON(http.StatusOK, api.WebhookResponse{})
@@ -190,40 +152,4 @@ func (s *Scheduler) HealthCheckHandler() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 
 	}
-}
-
-func (s *Scheduler) CreatePipeline(name string) (primitive.ObjectID, error) {
-	body, _ := json.Marshal(model.CreatePipelineInput{Payload: model.CreatePipelineInputPayload{Name: name}})
-	res, _ := http.Post(s.cfg.ApiBaseUrl+"/pipeline", "application/json", bytes.NewReader(body))
-	body, _ = io.ReadAll(res.Body)
-	var plRes api.PostPipelineResponse
-	err := json.Unmarshal(body, &plRes)
-
-	return plRes.Payload.Id, err
-}
-
-func (s *Scheduler) CreateTask(pipelineId, taskId, downstreamTaskId primitive.ObjectID, script, upstreamWebhook, downstreamWebhook string) (primitive.ObjectID, error) {
-	body, err := json.Marshal(model.CreateTaskInput{PipelineId: pipelineId, Payload: model.CreateTaskInputPayload{Id: taskId, Config: model.TaskConfig{DownstreamTaskId: downstreamTaskId, DownstreamWebhook: downstreamWebhook, Script: script}}})
-
-	if err != nil {
-		return primitive.NilObjectID, err
-	}
-
-	res, err := http.Post(s.cfg.ApiBaseUrl+"/task", "application/json", bytes.NewReader(body))
-	if err != nil {
-		return primitive.NilObjectID, err
-	}
-
-	body, err = io.ReadAll(res.Body)
-	if err != nil {
-		return primitive.NilObjectID, err
-	}
-
-	var ptRes api.PostTaskResponse
-	err = json.Unmarshal(body, &ptRes)
-	if err != nil {
-		return primitive.NilObjectID, err
-	}
-
-	return ptRes.Payload.Id, err
 }
