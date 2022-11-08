@@ -96,13 +96,14 @@ func (a *Api) PutTaskStatus() gin.HandlerFunc {
 				autoRun := true
 				pl, _ := a.repo.GetPipeline(ctx, model.GetPipelineInput{Id: &input.PipelineId, TaskFilter: model.TaskFilter{UpstreamTaskId: &input.TaskId, AutoRun: &autoRun}})
 
-				if pl != nil && len(pl.Tasks) == 0 {
+				if pl == nil || len(pl.Tasks) == 0 {
 					a.repo.UpdatePipelineStatus(ctx, model.UpdatePipelineStatusInput{PipelineId: input.PipelineId, Payload: model.UpdatePipelineStatusInputPayload{Status: model.PipelineIdle}})
-				} else {
-					for _, t := range pl.Tasks {
-						body, _ := json.Marshal(model.StreamWebhook{Payload: model.StreamWebhookPayload{PipelineId: pl.Id, Task: t, Arguments: pl.Arguments}})
-						http.Post(t.StreamWebhook, "application/json", bytes.NewReader(body))
-					}
+					return
+				}
+
+				for _, t := range pl.Tasks {
+					body, _ := json.Marshal(model.StreamWebhook{Payload: model.StreamWebhookPayload{PipelineId: pl.Id, Task: t, Arguments: pl.Arguments}})
+					http.Post(t.StreamWebhook, "application/json", bytes.NewReader(body))
 				}
 			} else if input.Payload.Status == model.TaskInProgress {
 				a.repo.UpdatePipelineStatus(ctx, model.UpdatePipelineStatusInput{PipelineId: input.PipelineId, Payload: model.UpdatePipelineStatusInputPayload{Status: model.PipelineBusy}})
