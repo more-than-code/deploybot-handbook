@@ -3,6 +3,7 @@ package api
 import (
 	"bytes"
 	"encoding/json"
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -102,6 +103,8 @@ func (a *Api) PutTaskStatus() gin.HandlerFunc {
 				}
 
 				for _, t := range pl.Tasks {
+					log.Println(t)
+
 					body, _ := json.Marshal(model.StreamWebhook{Payload: model.StreamWebhookPayload{PipelineId: pl.Id, Task: t, Arguments: pl.Arguments}})
 					http.Post(t.StreamWebhook, "application/json", bytes.NewReader(body))
 				}
