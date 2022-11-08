@@ -62,11 +62,11 @@ func (s *Scheduler) ProcessPreTask(pipelineId, taskId primitive.ObjectID) {
 	http.DefaultClient.Do(req)
 }
 
-func (s *Scheduler) ProcessPostTask(pipelineId, taskId primitive.ObjectID) {
+func (s *Scheduler) ProcessPostTask(pipelineId, taskId primitive.ObjectID, status string) {
 	body, _ := json.Marshal(model.UpdateTaskStatusInput{
 		PipelineId: pipelineId,
 		TaskId:     taskId,
-		Payload:    model.UpdateTaskStatusInputPayload{Status: model.TaskDone}})
+		Payload:    model.UpdateTaskStatusInputPayload{Status: status}})
 
 	req, _ := http.NewRequest("PUT", s.cfg.ApiBaseUrl+"/taskStatus", bytes.NewReader(body))
 	http.DefaultClient.Do(req)
@@ -81,8 +81,12 @@ func (s *Scheduler) StreamWebhookHandler() gin.HandlerFunc {
 
 		go func() {
 			s.ProcessPreTask(sw.Payload.PipelineId, sw.Payload.Task.Id)
-			s.runner.DoTask(sw.Payload.Task, sw.Payload.Arguments)
-			s.ProcessPostTask(sw.Payload.PipelineId, sw.Payload.Task.Id)
+			err := s.runner.DoTask(sw.Payload.Task, sw.Payload.Arguments)
+			if err != nil {
+				s.ProcessPostTask(sw.Payload.PipelineId, sw.Payload.Task.Id, model.TaskFailed)
+			} else {
+				s.ProcessPostTask(sw.Payload.PipelineId, sw.Payload.Task.Id, model.TaskDone)
+			}
 		}()
 
 		ctx.JSON(http.StatusOK, api.WebhookResponse{})

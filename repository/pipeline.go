@@ -78,8 +78,10 @@ func (r *Repository) GetPipeline(ctx context.Context, input model.GetPipelineInp
 		filter["tasks.autorun"] = input.TaskFilter.AutoRun
 	}
 
+	opts := options.FindOneOptions{Projection: bson.M{"tasks.$": 1}}
+
 	var pipeline model.Pipeline
-	err := coll.FindOne(ctx, filter).Decode(&pipeline)
+	err := coll.FindOne(ctx, filter, &opts).Decode(&pipeline)
 
 	if err != nil {
 		return nil, err
