@@ -4,24 +4,33 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/kelseyhightower/envconfig"
 	"github.com/more-than-code/deploybot/model"
 	"github.com/more-than-code/deploybot/repository"
 )
 
-type Api struct {
-	repo *repository.Repository
+type Config struct {
+	PkUsername string `envconfig:"PK_USERNAME"`
+	PkPassword string `envconfig:"PK_PASSWORD"`
 }
 
-type TaskCollection struct {
-	Pipelines []*model.Pipeline
+type Api struct {
+	repo *repository.Repository
+	cfg  Config
 }
 
 func NewApi() *Api {
+	var cfg Config
+	err := envconfig.Process("", &cfg)
+	if err != nil {
+		panic(err)
+	}
+
 	r, err := repository.NewRepository()
 	if err != nil {
 		panic(err)
 	}
-	return &Api{repo: r}
+	return &Api{repo: r, cfg: cfg}
 }
 
 func (a *Api) PostPipeline() gin.HandlerFunc {

@@ -3,6 +3,7 @@ package api
 import (
 	"bytes"
 	"encoding/json"
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -103,7 +104,14 @@ func (a *Api) PutTaskStatus() gin.HandlerFunc {
 
 				for _, t := range pl.Tasks {
 					body, _ := json.Marshal(model.StreamWebhook{Payload: model.StreamWebhookPayload{PipelineId: pl.Id, Task: t, Arguments: pl.Arguments}})
-					http.Post(t.StreamWebhook, "application/json", bytes.NewReader(body))
+
+					req, _ := http.NewRequest("POST", t.StreamWebhook, bytes.NewReader(body))
+					req.SetBasicAuth(a.cfg.PkUsername, a.cfg.PkPassword)
+					_, err := http.DefaultClient.Do(req)
+
+					if err != nil {
+						log.Println(err)
+					}
 				}
 			} else if input.Payload.Status == model.TaskInProgress {
 				a.repo.UpdatePipelineStatus(ctx, model.UpdatePipelineStatusInput{PipelineId: input.PipelineId, Payload: model.UpdatePipelineStatusInputPayload{Status: model.PipelineBusy}})

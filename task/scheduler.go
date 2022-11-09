@@ -23,6 +23,8 @@ var gEventQueue = list.New()
 
 type Config struct {
 	ApiBaseUrl string `envconfig:"API_BASE_URL"`
+	PkUsername string `envconfig:"PK_USERNAME"`
+	PkPassword string `envconfig:"PK_PASSWORD"`
 }
 
 type Scheduler struct {
@@ -152,7 +154,13 @@ func (s *Scheduler) GhWebhookHandler() gin.HandlerFunc {
 
 			// call stream webhook
 			body, _ = json.Marshal(model.StreamWebhook{Payload: model.StreamWebhookPayload{PipelineId: pl.Id, Task: t, Arguments: args}})
-			http.Post(t.StreamWebhook, "application/json", bytes.NewReader(body))
+			req, _ = http.NewRequest("POST", t.StreamWebhook, bytes.NewReader(body))
+			req.SetBasicAuth(s.cfg.PkUsername, s.cfg.PkPassword)
+			_, err := http.DefaultClient.Do(req)
+
+			if err != nil {
+				log.Println(err)
+			}
 		}
 
 		ctx.JSON(http.StatusOK, api.WebhookResponse{})
