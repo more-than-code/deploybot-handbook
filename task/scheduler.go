@@ -106,12 +106,17 @@ func (s *Scheduler) GhWebhookHandler() gin.HandlerFunc {
 		json.Unmarshal(body, &data)
 
 		comps := strings.Split(data.Ref, "/")
-		branchOrTag := ""
+		branch := ""
+		imageTag := "latest"
 		if len(comps) == 3 {
-			branchOrTag = comps[2]
+			if comps[1] == "tags" {
+				imageTag = comps[2]
+			} else {
+				branch = comps[2]
+			}
 		}
 
-		res, _ := http.Get(fmt.Sprintf("%s/pipelines?repoWatched=%s&branchWatched=%s$autoRun=true", s.cfg.ApiBaseUrl, data.Repository.Name, branchOrTag))
+		res, _ := http.Get(fmt.Sprintf("%s/pipelines?repoWatched=%s&branchWatched=%s$autoRun=true", s.cfg.ApiBaseUrl, data.Repository.Name, branch))
 		body, _ = io.ReadAll(res.Body)
 
 		var plRes api.GetPipelinesResponse
@@ -146,7 +151,7 @@ func (s *Scheduler) GhWebhookHandler() gin.HandlerFunc {
 			http.DefaultClient.Do(req)
 
 			// update pipeline
-			args := []string{fmt.Sprintf("IMAGE_TAG=%s", branchOrTag)}
+			args := []string{fmt.Sprintf("IMAGE_TAG=%s", imageTag)}
 
 			body, _ = json.Marshal(model.UpdatePipelineInput{
 				Id:      pl.Id,

@@ -67,7 +67,7 @@ func (a *Api) GetPipelines() gin.HandlerFunc {
 		branchWatched, exists := ctx.GetQuery("branchWatched")
 
 		var bw *string
-		if exists {
+		if exists && branchWatched != "" {
 			bw = &branchWatched
 		}
 
