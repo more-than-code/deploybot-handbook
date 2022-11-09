@@ -159,7 +159,7 @@ func (s *Scheduler) GhWebhookHandler() gin.HandlerFunc {
 			res, _ := http.DefaultClient.Do(req)
 
 			if res != nil {
-				log.Println(res.Body)
+				log.Println(res.Header["Status"])
 			}
 		}
 

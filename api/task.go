@@ -110,7 +110,7 @@ func (a *Api) PutTaskStatus() gin.HandlerFunc {
 					res, _ := http.DefaultClient.Do(req)
 
 					if res != nil {
-						log.Println(res.Body)
+						log.Println(res.Header["Status"])
 					}
 				}
 			} else if input.Payload.Status == model.TaskInProgress {
