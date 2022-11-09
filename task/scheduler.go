@@ -85,6 +85,7 @@ func (s *Scheduler) StreamWebhookHandler() gin.HandlerFunc {
 			s.ProcessPreTask(sw.Payload.PipelineId, sw.Payload.Task.Id)
 			err := s.runner.DoTask(sw.Payload.Task, sw.Payload.Arguments)
 			if err != nil {
+				log.Println(err)
 				s.ProcessPostTask(sw.Payload.PipelineId, sw.Payload.Task.Id, model.TaskFailed)
 			} else {
 				s.ProcessPostTask(sw.Payload.PipelineId, sw.Payload.Task.Id, model.TaskDone)

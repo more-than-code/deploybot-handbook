@@ -4,8 +4,11 @@
 <div>Name: <b>{{.Name}}</b> Status: <b>{{.Status}}</b></div>
 <ul>
     <li>ID: {{.Id2Hex}}</li>
+    <li>Watched repo: {{.WatchedRepo}}</li>
+    <li>Auto run: {{.AutoRun}}</li>
     <li>Executed at: {{.ExecutedAt2Str}}</li>
     <li>Stopped at: {{.StoppedAt2Str}}</li>
+    <li>Arguments: {{.Arguments}}</li>
 </ul>
 <details>
     <summary>Tasks</summary>
@@ -14,6 +17,9 @@
     <li style="margin-bottom:10px">Name: <b>{{.Name}}</b> Status: <b>{{.Status}}</b> <span style="margin-left: 20px"><button onclick="alert(`Don't be silly, my friend!`)">RUN</button> <button  onclick="alert(`Not yet implemented.`)">EDIT</button></span></li>
     <ul>
         <li>ID: {{.Id2Hex}}</li>
+        <li>Upstream task ID: {{.UpstreamtaskId2Hex}}</li> 
+        <li>Stream webhook: {{.StreamWebhook}}</li> 
+        <li>Auto run: {{.AutoRun}}</li>
         <li>Executed at: {{.ExecutedAt2Str}}</li>
         <li>Stopped at: {{.StoppedAt2Str}}</li>
         <li>Remarks: 
