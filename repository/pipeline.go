@@ -42,6 +42,9 @@ func (r *Repository) GetPipelines(ctx context.Context, input model.GetPipelinesI
 	if input.RepoWatched != nil {
 		filter["repowatched"] = input.RepoWatched
 	}
+	if input.BranchWatched != nil {
+		filter["branchwatched"] = input.BranchWatched
+	}
 	if input.AutoRun != nil {
 		filter["autorun"] = input.AutoRun
 	}
@@ -116,6 +119,9 @@ func (r *Repository) UpdatePipeline(ctx context.Context, input model.UpdatePipel
 	}
 	if input.Payload.RepoWatched != nil {
 		doc["repowatched"] = input.Payload.RepoWatched
+	}
+	if input.Payload.BranchWatched != nil {
+		doc["branchwatched"] = input.Payload.BranchWatched
 	}
 
 	update := bson.M{"$set": doc}

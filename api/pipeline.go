@@ -64,6 +64,13 @@ func (a *Api) GetPipelines() gin.HandlerFunc {
 			rw = &repoWatched
 		}
 
+		branchWatched, exists := ctx.GetQuery("branchWatched")
+
+		var bw *string
+		if exists {
+			bw = &branchWatched
+		}
+
 		autoRun, exists := ctx.GetQuery("autoRun")
 		var ar *bool
 		if exists {
@@ -75,7 +82,7 @@ func (a *Api) GetPipelines() gin.HandlerFunc {
 			ar = &cVal
 		}
 
-		pls, err := a.repo.GetPipelines(ctx, model.GetPipelinesInput{RepoWatched: rw, AutoRun: ar})
+		pls, err := a.repo.GetPipelines(ctx, model.GetPipelinesInput{RepoWatched: rw, BranchWatched: bw, AutoRun: ar})
 
 		if err != nil {
 			ctx.JSON(http.StatusBadRequest, GetPipelinesResponse{Code: CodeClientError, Msg: err.Error()})
