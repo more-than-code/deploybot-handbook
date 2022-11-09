@@ -71,16 +71,19 @@ func (r *Repository) GetPipeline(ctx context.Context, input model.GetPipelineInp
 	if input.Name != nil {
 		filter["name"] = input.Name
 	}
+
+	taskFilter := bson.M{}
 	if input.TaskFilter.UpstreamTaskId != nil {
-		filter["tasks.upstreamtaskid"] = input.TaskFilter.UpstreamTaskId
+		taskFilter["upstreamtaskid"] = input.TaskFilter.UpstreamTaskId
+
 	}
 	if input.TaskFilter.AutoRun != nil {
-		filter["tasks.autorun"] = input.TaskFilter.AutoRun
+		taskFilter["autorun"] = input.TaskFilter.AutoRun
 	}
 
 	opts := options.FindOneOptions{}
-	if input.TaskFilter.UpstreamTaskId != nil || input.TaskFilter.AutoRun != nil {
-		opts.SetProjection(bson.M{"tasks.$": 1})
+	if len(taskFilter) > 0 {
+		opts.SetProjection(bson.M{"tasks": bson.M{"$elemMatch": taskFilter}})
 	}
 
 	var pipeline model.Pipeline

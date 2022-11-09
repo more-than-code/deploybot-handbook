@@ -79,6 +79,8 @@ func (s *Scheduler) StreamWebhookHandler() gin.HandlerFunc {
 		var sw model.StreamWebhook
 		json.Unmarshal(body, &sw)
 
+		log.Println(sw.Payload)
+
 		go func() {
 			s.ProcessPreTask(sw.Payload.PipelineId, sw.Payload.Task.Id)
 			err := s.runner.DoTask(sw.Payload.Task, sw.Payload.Arguments)
@@ -116,6 +118,10 @@ func (s *Scheduler) GhWebhookHandler() gin.HandlerFunc {
 			}
 
 			t := pl.Tasks[0]
+
+			if t.Status == model.TaskInProgress {
+				continue
+			}
 
 			// update task
 			cbs, _ := json.Marshal(data.Commits)
