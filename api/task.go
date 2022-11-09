@@ -107,10 +107,10 @@ func (a *Api) PutTaskStatus() gin.HandlerFunc {
 
 					req, _ := http.NewRequest("POST", t.StreamWebhook, bytes.NewReader(body))
 					req.SetBasicAuth(a.cfg.PkUsername, a.cfg.PkPassword)
-					_, err := http.DefaultClient.Do(req)
+					res, _ := http.DefaultClient.Do(req)
 
-					if err != nil {
-						log.Println(err)
+					if res != nil {
+						log.Println(res.Body)
 					}
 				}
 			} else if input.Payload.Status == model.TaskInProgress {
