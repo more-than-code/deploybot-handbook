@@ -116,7 +116,7 @@ func (s *Scheduler) GhWebhookHandler() gin.HandlerFunc {
 			}
 		}
 
-		res, _ := http.Get(fmt.Sprintf("%s/pipelines?repoWatched=%s&branchWatched=%s$autoRun=true", s.cfg.ApiBaseUrl, data.Repository.Name, branch))
+		res, _ := http.Get(fmt.Sprintf("%s/pipelines?repoWatched=%s&branchWatched=%s&autoRun=true", s.cfg.ApiBaseUrl, data.Repository.Name, branch))
 		body, _ = io.ReadAll(res.Body)
 
 		var plRes api.GetPipelinesResponse
