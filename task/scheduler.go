@@ -18,7 +18,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-var gTaskTicker *time.Ticker
+var gTicker *time.Ticker
 var gEventQueue = list.New()
 
 type Config struct {
@@ -178,4 +178,19 @@ func (s *Scheduler) HealthCheckHandler() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 
 	}
+}
+
+func (s *Scheduler) cleanUp(pipeline model.Pipeline) {
+	if gTicker != nil {
+		return
+	}
+
+	gTicker := time.NewTicker(time.Minute)
+
+	go func() {
+		for range gTicker.C {
+			gTicker.Stop()
+			gTicker = nil
+		}
+	}()
 }

@@ -93,6 +93,8 @@ func (a *Api) PutTaskStatus() gin.HandlerFunc {
 		ctx.JSON(http.StatusOK, PutTaskStatusResponse{})
 
 		go func() {
+			pStatus := model.PipelineIdle
+
 			if input.Payload.Status == model.TaskDone {
 				autoRun := true
 				pl, _ := a.repo.GetPipeline(ctx, model.GetPipelineInput{Id: &input.PipelineId, TaskFilter: model.TaskFilter{UpstreamTaskId: &input.TaskId, AutoRun: &autoRun}})
@@ -114,10 +116,10 @@ func (a *Api) PutTaskStatus() gin.HandlerFunc {
 					}
 				}
 			} else if input.Payload.Status == model.TaskInProgress {
-				a.repo.UpdatePipelineStatus(ctx, model.UpdatePipelineStatusInput{PipelineId: input.PipelineId, Payload: model.UpdatePipelineStatusInputPayload{Status: model.PipelineBusy}})
-			} else {
-				a.repo.UpdatePipelineStatus(ctx, model.UpdatePipelineStatusInput{PipelineId: input.PipelineId, Payload: model.UpdatePipelineStatusInputPayload{Status: model.PipelineIdle}})
+				pStatus = model.PipelineBusy
 			}
+
+			a.repo.UpdatePipelineStatus(ctx, model.UpdatePipelineStatusInput{PipelineId: input.PipelineId, Payload: model.UpdatePipelineStatusInputPayload{Status: pStatus}})
 		}()
 	}
 }
