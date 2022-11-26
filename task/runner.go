@@ -1,9 +1,11 @@
 package task
 
 import (
+	"bufio"
+	"fmt"
 	"log"
 	"os"
-	"os/exec"
+	"strings"
 
 	"github.com/more-than-code/deploybot/model"
 )
@@ -16,14 +18,27 @@ func NewRunner() *Runner {
 }
 
 func (r *Runner) DoTask(t model.Task, args []string) error {
+	const pipe = "/var/opt/mypipe"
 	if t.Config.Script != "" {
-		cmd := exec.Command("echo", t.Config.Script, "/var/opt/mypipe")
-		cmd.Env = os.Environ()
-		cmd.Env = append(cmd.Env, args...)
-		output, err := cmd.Output()
-		log.Println(string(output))
+		envVarStr := strings.Join(args, " ")
+		err := os.WriteFile(pipe, []byte(fmt.Sprintf("%s; %s", envVarStr, t.Config.Script)), 0644)
 		if err != nil {
 			return err
+		}
+
+		file, err := os.OpenFile(pipe, os.O_CREATE, os.ModeNamedPipe)
+		if err != nil {
+			return err
+		}
+
+		reader := bufio.NewReader(file)
+
+		for {
+			res, err := reader.ReadBytes('\n')
+			if err == nil {
+				log.Println(res)
+				break
+			}
 		}
 	}
 
