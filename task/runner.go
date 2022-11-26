@@ -2,7 +2,6 @@ package task
 
 import (
 	"bufio"
-	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -23,8 +22,7 @@ func (r *Runner) DoTask(t model.Task, args []string) error {
 	if t.Config.Script != "" {
 		envVarStr := strings.Join(args, " ")
 
-		data, _ := json.Marshal(t)
-		callback := fmt.Sprintf("printf '%s\n' > ./mypipe", data)
+		callback := fmt.Sprintf("printf '%s\n' > ./mypipe", t.Id.Hex())
 		err := os.WriteFile(pipe, []byte(fmt.Sprintf("%s; %s; %s", envVarStr, t.Config.Script, callback)), 0644)
 		if err != nil {
 			return err
