@@ -24,7 +24,7 @@ func (r *Runner) DoTask(t model.Task, args []string) error {
 		envVarStr := strings.Join(args, " ")
 
 		data, _ := json.Marshal(t)
-		callback := fmt.Sprintf("printf '%s\n' > %s", data, pipe)
+		callback := fmt.Sprintf("printf '%s\n' > ./mypipe", data)
 		err := os.WriteFile(pipe, []byte(fmt.Sprintf("%s; %s; %s", envVarStr, t.Config.Script, callback)), 0644)
 		if err != nil {
 			return err
