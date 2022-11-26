@@ -1,5 +1,5 @@
 services:
-  graph:
+  bot:
     image: binartist/deploybot
     logging:
       options:
@@ -8,7 +8,7 @@ services:
     ports:
       - 8080:8080
     env_file:
-      - ./.env
+      - pk.env
     restart: on-failure
 
   mongo:
@@ -17,6 +17,6 @@ services:
     ports:
       - 27018:27017
     env_file:
-      - .env
+      - pk.env
     volumes:
       - ./data:/data/db
