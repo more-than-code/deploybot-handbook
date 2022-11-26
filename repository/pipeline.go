@@ -86,7 +86,7 @@ func (r *Repository) GetPipeline(ctx context.Context, input model.GetPipelineInp
 
 	opts := options.FindOneOptions{}
 	if len(taskFilter) > 0 {
-		opts.SetProjection(bson.M{"tasks": bson.M{"$elemMatch": taskFilter}})
+		opts.SetProjection(bson.M{"arguments": 1, "tasks": bson.M{"$elemMatch": taskFilter}})
 	}
 
 	var pipeline model.Pipeline
