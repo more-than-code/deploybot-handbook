@@ -2,6 +2,7 @@ package task
 
 import (
 	"bufio"
+	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -21,7 +22,10 @@ func (r *Runner) DoTask(t model.Task, args []string) error {
 	const pipe = "/var/opt/mypipe"
 	if t.Config.Script != "" {
 		envVarStr := strings.Join(args, " ")
-		err := os.WriteFile(pipe, []byte(fmt.Sprintf("%s; %s", envVarStr, t.Config.Script)), 0644)
+
+		data, _ := json.Marshal(t)
+		callback := fmt.Sprintf("printf '%s\n' > %s", data, pipe)
+		err := os.WriteFile(pipe, []byte(fmt.Sprintf("%s; %s; %s", envVarStr, t.Config.Script, callback)), 0644)
 		if err != nil {
 			return err
 		}
@@ -36,7 +40,7 @@ func (r *Runner) DoTask(t model.Task, args []string) error {
 		for {
 			res, err := reader.ReadBytes('\n')
 			if err == nil {
-				log.Println(res)
+				log.Println(string(res))
 				break
 			}
 		}
