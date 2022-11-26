@@ -10,4 +10,6 @@ RUN go build -o /go/bin/app ./main.go
 FROM alpine:3.16
 WORKDIR /usr/bin
 COPY --from=build /go/bin .
+COPY asset /var/opt/asset
+WORKDIR /var/opt/project
 CMD ["app"]

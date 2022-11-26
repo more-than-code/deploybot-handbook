@@ -1,6 +1,7 @@
 services:
   bot:
     image: binartist/deploybot
+    container_name: bot
     logging:
       options:
         max-size: "5m"
@@ -16,6 +17,7 @@ services:
 
   mongo:
     image: mongo
+    container_name: mongo
     restart: always
     ports:
       - 27018:27017
@@ -23,3 +25,25 @@ services:
       - pk.env
     volumes:
       - ./data:/data/db
+
+  swag:
+    image: lscr.io/linuxserver/swag
+    container_name: swag
+    cap_add:
+      - NET_ADMIN
+    env_file:
+      - ./.env
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - VALIDATION=http
+    volumes:
+      - ./config:/config
+    ports:
+      - 443:443
+      - 80:80
+    restart: on-failure
+
+networks:
+  default:
+    name: deploybot-network
