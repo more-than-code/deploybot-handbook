@@ -11,7 +11,7 @@ services:
     env_file:
       - pk.env
     volumes:
-      - ./project:/var/opt/project
+      - ./mypipe:/var/opt/mypipe
     restart: on-failure
 
   mongo:
@@ -31,7 +31,7 @@ services:
     cap_add:
       - NET_ADMIN
     env_file:
-      - ./.env
+      - ./pk.env
     environment:
       - PUID=1000
       - PGID=1000

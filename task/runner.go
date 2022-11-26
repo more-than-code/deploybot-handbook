@@ -17,7 +17,7 @@ func NewRunner() *Runner {
 
 func (r *Runner) DoTask(t model.Task, args []string) error {
 	if t.Config.Script != "" {
-		cmd := exec.Command("sh", "-c", t.Config.Script)
+		cmd := exec.Command("echo", t.Config.Script, "/var/opt/mypipe")
 		cmd.Env = os.Environ()
 		cmd.Env = append(cmd.Env, args...)
 		output, err := cmd.Output()
