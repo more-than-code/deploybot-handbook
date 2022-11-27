@@ -84,7 +84,7 @@ func (s *Scheduler) StreamWebhookHandler() gin.HandlerFunc {
 
 		log.Println(sw.Payload)
 
-		defer s.cleanUp(time.Minute*time.Duration(s.cfg.TaskTimeout), func() {
+		defer s.cleanUp(s.cfg.TaskTimeout, func() {
 			s.updateTaskStatus(sw.Payload.PipelineId, sw.Payload.Task.Id, model.TaskTimedOut)
 		})
 
@@ -185,9 +185,9 @@ func (s *Scheduler) HealthCheckHandler() gin.HandlerFunc {
 	}
 }
 
-func (s *Scheduler) cleanUp(delay time.Duration, job func()) {
+func (s *Scheduler) cleanUp(minutes int64, job func()) {
 	go func() {
-		for range time.NewTimer(delay).C {
+		for range time.NewTimer(time.Duration(minutes)).C {
 			job()
 		}
 	}()
