@@ -22,10 +22,9 @@ var gTicker *time.Ticker
 var gEventQueue = list.New()
 
 type Config struct {
-	ApiBaseUrl  string `envconfig:"API_BASE_URL"`
-	PkUsername  string `envconfig:"PK_USERNAME"`
-	PkPassword  string `envconfig:"PK_PASSWORD"`
-	TaskTimeout int64  `envconfig:"TASK_TIMEOUT"`
+	ApiBaseUrl string `envconfig:"API_BASE_URL"`
+	PkUsername string `envconfig:"PK_USERNAME"`
+	PkPassword string `envconfig:"PK_PASSWORD"`
 }
 
 type Scheduler struct {
@@ -84,13 +83,21 @@ func (s *Scheduler) StreamWebhookHandler() gin.HandlerFunc {
 
 		log.Println(sw.Payload)
 
-		defer s.cleanUp(time.Minute*time.Duration(s.cfg.TaskTimeout), func() {
-			s.updateTaskStatus(sw.Payload.PipelineId, sw.Payload.Task.Id, model.TaskTimedOut)
-		})
+		var timer *time.Timer
+		if sw.Payload.Task.Timeout > 0 {
+			timer = s.cleanUp(time.Minute*time.Duration(sw.Payload.Task.Timeout), func() {
+				s.updateTaskStatus(sw.Payload.PipelineId, sw.Payload.Task.Id, model.TaskTimedOut)
+			})
+		}
 
 		go func() {
 			s.updateTaskStatus(sw.Payload.PipelineId, sw.Payload.Task.Id, model.TaskInProgress)
 			err := s.runner.DoTask(sw.Payload.Task, sw.Payload.Arguments)
+
+			if timer != nil {
+				timer.Stop()
+			}
+
 			if err != nil {
 				log.Println(err)
 				s.ProcessPostTask(sw.Payload.PipelineId, sw.Payload.Task.Id, model.TaskFailed)
@@ -185,12 +192,15 @@ func (s *Scheduler) HealthCheckHandler() gin.HandlerFunc {
 	}
 }
 
-func (s *Scheduler) cleanUp(delay time.Duration, job func()) {
+func (s *Scheduler) cleanUp(delay time.Duration, job func()) *time.Timer {
+	t := time.NewTimer(delay)
 	go func() {
-		for range time.NewTimer(delay).C {
+		for range t.C {
 			job()
 		}
 	}()
+
+	return t
 }
 
 func (s *Scheduler) CreatePipeline(name string) (primitive.ObjectID, error) {
