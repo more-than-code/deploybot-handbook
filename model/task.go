@@ -21,6 +21,7 @@ type Task struct {
 	Config         TaskRunConfig
 	Remarks        string
 	AutoRun        bool
+	Timeout        int64 // minutes
 }
 
 type UpdateTaskInputPayload struct {
@@ -31,6 +32,7 @@ type UpdateTaskInputPayload struct {
 	Config         *TaskRunConfig
 	Remarks        *string
 	AutoRun        *bool
+	Timeout        *int64
 }
 type UpdateTaskInput struct {
 	PipelineId primitive.ObjectID
@@ -55,6 +57,7 @@ type CreateTaskInputPayload struct {
 	UpstreamTaskId primitive.ObjectID `bson:",omitempty"`
 	StreamWebhook  string
 	AutoRun        bool
+	Timeout        int64
 }
 type CreateTaskInput struct {
 	PipelineId primitive.ObjectID
