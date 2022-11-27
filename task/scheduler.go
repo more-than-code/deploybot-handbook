@@ -22,9 +22,10 @@ var gTicker *time.Ticker
 var gEventQueue = list.New()
 
 type Config struct {
-	ApiBaseUrl string `envconfig:"API_BASE_URL"`
-	PkUsername string `envconfig:"PK_USERNAME"`
-	PkPassword string `envconfig:"PK_PASSWORD"`
+	ApiBaseUrl  string        `envconfig:"API_BASE_URL"`
+	PkUsername  string        `envconfig:"PK_USERNAME"`
+	PkPassword  string        `envconfig:"PK_PASSWORD"`
+	TaskTimeout time.Duration `envconfig:"TASK_TIMEOUT"`
 }
 
 type Scheduler struct {
@@ -54,11 +55,11 @@ func (s *Scheduler) PullEvent() model.Event {
 	return e.Value.(model.Event)
 }
 
-func (s *Scheduler) ProcessPreTask(pipelineId, taskId primitive.ObjectID) {
+func (s *Scheduler) updateTaskStatus(pipelineId, taskId primitive.ObjectID, status string) {
 	body, _ := json.Marshal(model.UpdateTaskStatusInput{
 		PipelineId: pipelineId,
 		TaskId:     taskId,
-		Payload:    model.UpdateTaskStatusInputPayload{Status: model.TaskInProgress}})
+		Payload:    model.UpdateTaskStatusInputPayload{Status: status}})
 
 	req, _ := http.NewRequest("PUT", s.cfg.ApiBaseUrl+"/taskStatus", bytes.NewReader(body))
 	http.DefaultClient.Do(req)
@@ -83,8 +84,12 @@ func (s *Scheduler) StreamWebhookHandler() gin.HandlerFunc {
 
 		log.Println(sw.Payload)
 
+		defer s.cleanUp(time.Minute*s.cfg.TaskTimeout, func() {
+			s.updateTaskStatus(sw.Payload.PipelineId, sw.Payload.Task.Id, model.TaskDone)
+		})
+
 		go func() {
-			s.ProcessPreTask(sw.Payload.PipelineId, sw.Payload.Task.Id)
+			s.updateTaskStatus(sw.Payload.PipelineId, sw.Payload.Task.Id, model.TaskInProgress)
 			err := s.runner.DoTask(sw.Payload.Task, sw.Payload.Arguments)
 			if err != nil {
 				log.Println(err)
@@ -180,17 +185,46 @@ func (s *Scheduler) HealthCheckHandler() gin.HandlerFunc {
 	}
 }
 
-func (s *Scheduler) cleanUp(pipeline model.Pipeline) {
-	if gTicker != nil {
-		return
-	}
-
-	gTicker := time.NewTicker(time.Minute)
-
+func (s *Scheduler) cleanUp(delay time.Duration, job func()) {
 	go func() {
-		for range gTicker.C {
-			gTicker.Stop()
-			gTicker = nil
+		for range time.NewTimer(delay).C {
+			job()
 		}
 	}()
+}
+
+func (s *Scheduler) CreatePipeline(name string) (primitive.ObjectID, error) {
+	body, _ := json.Marshal(model.CreatePipelineInput{Payload: model.CreatePipelineInputPayload{Name: name}})
+	res, _ := http.Post(s.cfg.ApiBaseUrl+"/pipeline", "application/json", bytes.NewReader(body))
+	body, _ = io.ReadAll(res.Body)
+	var plRes api.PostPipelineResponse
+	err := json.Unmarshal(body, &plRes)
+
+	return plRes.Payload.Id, err
+}
+
+func (s *Scheduler) CreateTask(pipelineId, taskId, downstreamTaskId primitive.ObjectID, script, upstreamWebhook, downstreamWebhook string) (primitive.ObjectID, error) {
+	body, err := json.Marshal(model.CreateTaskInput{PipelineId: pipelineId, Payload: model.CreateTaskInputPayload{Id: taskId, Config: model.TaskRunConfig{Script: script}}})
+
+	if err != nil {
+		return primitive.NilObjectID, err
+	}
+
+	res, err := http.Post(s.cfg.ApiBaseUrl+"/task", "application/json", bytes.NewReader(body))
+	if err != nil {
+		return primitive.NilObjectID, err
+	}
+
+	body, err = io.ReadAll(res.Body)
+	if err != nil {
+		return primitive.NilObjectID, err
+	}
+
+	var ptRes api.PostTaskResponse
+	err = json.Unmarshal(body, &ptRes)
+	if err != nil {
+		return primitive.NilObjectID, err
+	}
+
+	return ptRes.Payload.Id, err
 }
