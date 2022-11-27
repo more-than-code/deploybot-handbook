@@ -85,7 +85,7 @@ func (s *Scheduler) StreamWebhookHandler() gin.HandlerFunc {
 		log.Println(sw.Payload)
 
 		defer s.cleanUp(time.Minute*time.Duration(s.cfg.TaskTimeout), func() {
-			s.updateTaskStatus(sw.Payload.PipelineId, sw.Payload.Task.Id, model.TaskDone)
+			s.updateTaskStatus(sw.Payload.PipelineId, sw.Payload.Task.Id, model.TaskTimedOut)
 		})
 
 		go func() {

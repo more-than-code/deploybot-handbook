@@ -6,6 +6,7 @@ const (
 	TaskDone       = "Done"
 	TaskCanceled   = "Canceled"
 	TaskFailed     = "Failed"
+	TaskTimedOut   = "TimedOut"
 )
 
 const (
