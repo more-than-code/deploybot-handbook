@@ -22,10 +22,10 @@ var gTicker *time.Ticker
 var gEventQueue = list.New()
 
 type Config struct {
-	ApiBaseUrl  string        `envconfig:"API_BASE_URL"`
-	PkUsername  string        `envconfig:"PK_USERNAME"`
-	PkPassword  string        `envconfig:"PK_PASSWORD"`
-	TaskTimeout time.Duration `envconfig:"TASK_TIMEOUT"`
+	ApiBaseUrl  string `envconfig:"API_BASE_URL"`
+	PkUsername  string `envconfig:"PK_USERNAME"`
+	PkPassword  string `envconfig:"PK_PASSWORD"`
+	TaskTimeout int64  `envconfig:"TASK_TIMEOUT"`
 }
 
 type Scheduler struct {
@@ -84,7 +84,7 @@ func (s *Scheduler) StreamWebhookHandler() gin.HandlerFunc {
 
 		log.Println(sw.Payload)
 
-		defer s.cleanUp(time.Minute*s.cfg.TaskTimeout, func() {
+		defer s.cleanUp(time.Minute*time.Duration(s.cfg.TaskTimeout), func() {
 			s.updateTaskStatus(sw.Payload.PipelineId, sw.Payload.Task.Id, model.TaskDone)
 		})
 
