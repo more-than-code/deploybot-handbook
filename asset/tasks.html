@@ -5,6 +5,7 @@
 <ul>
     <li>ID: {{.Id2Hex}}</li>
     <li>Repo watched: {{.RepoWatched}}</li>
+    <li>Branch watched: {{.BranchWatched}}</li>
     <li>Auto run: {{.AutoRun}}</li>
     <li>Executed at: {{.ExecutedAt2Str}}</li>
     <li>Stopped at: {{.StoppedAt2Str}}</li>
@@ -22,6 +23,7 @@
         <li>Auto run: {{.AutoRun}}</li>
         <li>Executed at: {{.ExecutedAt2Str}}</li>
         <li>Stopped at: {{.StoppedAt2Str}}</li>
+        <li>Timeout: {{.Timeout}}</li>
         <li>Remarks: 
             {{if .Remarks}}
             <p>{{.Remarks}}</p>
