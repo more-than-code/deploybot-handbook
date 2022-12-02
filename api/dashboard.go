@@ -11,7 +11,7 @@ func (a *Api) DashboardHandler() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		pls, _ := a.repo.GetPipelines(ctx, model.GetPipelinesInput{})
 
-		tmpl := template.Must(template.ParseFiles("/var/opt/asset/tasks.html"))
+		tmpl := template.Must(template.ParseFiles(a.cfg.TemplatePath))
 
 		tmpl.Execute(ctx.Writer, pls)
 	}

@@ -1,47 +1,30 @@
 package task
 
 import (
-	"bufio"
-	"fmt"
-	"log"
-	"os"
-	"strings"
-
+	"github.com/kelseyhightower/envconfig"
 	"github.com/more-than-code/deploybot/model"
 )
 
+type RunnerConfig struct {
+}
+
 type Runner struct {
+	cfg RunnerConfig
 }
 
 func NewRunner() *Runner {
+	var cfg RunnerConfig
+	err := envconfig.Process("", &cfg)
+	if err != nil {
+		panic(err)
+	}
+
 	return &Runner{}
 }
 
 func (r *Runner) DoTask(t model.Task, args []string) error {
-	const pipe = "/var/opt/mypipe"
 	if t.Config.Script != "" {
-		envVarStr := strings.Join(args, " ")
 
-		callback := fmt.Sprintf("printf '%s\n' > ./mypipe", t.Id.Hex())
-		err := os.WriteFile(pipe, []byte(fmt.Sprintf("%s; %s; %s", envVarStr, t.Config.Script, callback)), 0644)
-		if err != nil {
-			return err
-		}
-
-		file, err := os.OpenFile(pipe, os.O_CREATE, os.ModeNamedPipe)
-		if err != nil {
-			return err
-		}
-
-		reader := bufio.NewReader(file)
-
-		for {
-			res, err := reader.ReadBytes('\n')
-			if err == nil {
-				log.Println(string(res))
-				break
-			}
-		}
 	}
 
 	return nil

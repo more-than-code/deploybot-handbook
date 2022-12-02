@@ -21,7 +21,7 @@ import (
 var gTicker *time.Ticker
 var gEventQueue = list.New()
 
-type Config struct {
+type SchedulerConfig struct {
 	ApiBaseUrl string `envconfig:"API_BASE_URL"`
 	PkUsername string `envconfig:"PK_USERNAME"`
 	PkPassword string `envconfig:"PK_PASSWORD"`
@@ -29,11 +29,11 @@ type Config struct {
 
 type Scheduler struct {
 	runner *Runner
-	cfg    Config
+	cfg    SchedulerConfig
 }
 
 func NewScheduler() *Scheduler {
-	var cfg Config
+	var cfg SchedulerConfig
 	err := envconfig.Process("", &cfg)
 	if err != nil {
 		panic(err)

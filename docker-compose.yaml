@@ -11,7 +11,8 @@ services:
     env_file:
       - pk.env
     volumes:
-      - ./mypipe:/var/opt/mypipe
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./projects:/var/opt/projects
     restart: on-failure
 
   mongo:
@@ -45,4 +46,4 @@ services:
 
 networks:
   default:
-    name: deploybot-network
+    name: bot-network
