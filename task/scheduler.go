@@ -202,39 +202,3 @@ func (s *Scheduler) cleanUp(delay time.Duration, job func()) *time.Timer {
 
 	return t
 }
-
-func (s *Scheduler) CreatePipeline(name string) (primitive.ObjectID, error) {
-	body, _ := json.Marshal(model.CreatePipelineInput{Payload: model.CreatePipelineInputPayload{Name: name}})
-	res, _ := http.Post(s.cfg.ApiBaseUrl+"/pipeline", "application/json", bytes.NewReader(body))
-	body, _ = io.ReadAll(res.Body)
-	var plRes api.PostPipelineResponse
-	err := json.Unmarshal(body, &plRes)
-
-	return plRes.Payload.Id, err
-}
-
-func (s *Scheduler) CreateTask(pipelineId, taskId, downstreamTaskId primitive.ObjectID, script, upstreamWebhook, downstreamWebhook string) (primitive.ObjectID, error) {
-	body, err := json.Marshal(model.CreateTaskInput{PipelineId: pipelineId, Payload: model.CreateTaskInputPayload{Id: taskId, Config: model.TaskRunConfig{Script: script}}})
-
-	if err != nil {
-		return primitive.NilObjectID, err
-	}
-
-	res, err := http.Post(s.cfg.ApiBaseUrl+"/task", "application/json", bytes.NewReader(body))
-	if err != nil {
-		return primitive.NilObjectID, err
-	}
-
-	body, err = io.ReadAll(res.Body)
-	if err != nil {
-		return primitive.NilObjectID, err
-	}
-
-	var ptRes api.PostTaskResponse
-	err = json.Unmarshal(body, &ptRes)
-	if err != nil {
-		return primitive.NilObjectID, err
-	}
-
-	return ptRes.Payload.Id, err
-}

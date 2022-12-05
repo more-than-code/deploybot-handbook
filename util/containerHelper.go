@@ -1,4 +1,4 @@
-package container
+package util
 
 import (
 	"context"
@@ -8,20 +8,33 @@ import (
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
+	"github.com/docker/docker/api/types/network"
 	"github.com/docker/docker/client"
+	"github.com/kelseyhightower/envconfig"
 	"github.com/more-than-code/deploybot/model"
 )
 
+type ContainerHelperConfig struct {
+	RegistryAuth string `envconfig:"REGISTRY_AUTH"`
+}
+
 type ContainerHelper struct {
 	cli *client.Client
+	cfg ContainerHelperConfig
 }
 
 func NewContainerHelper(host string) *ContainerHelper {
+	var cfg ContainerHelperConfig
+	err := envconfig.Process("", &cfg)
+	if err != nil {
+		panic(err)
+	}
+
 	cli, err := client.NewClientWithOpts(client.WithHost(host), client.WithAPIVersionNegotiation())
 	if err != nil {
 		panic(err)
 	}
-	return &ContainerHelper{cli: cli}
+	return &ContainerHelper{cli: cli, cfg: cfg}
 }
 
 func (h *ContainerHelper) BuildImage(buildContext io.Reader, buidOptions *types.ImageBuildOptions) error {
@@ -43,8 +56,8 @@ func (h *ContainerHelper) BuildImage(buildContext io.Reader, buidOptions *types.
 	return nil
 }
 
-func (h *ContainerHelper) PushImage(imageTag string, pushOptions *types.ImagePushOptions) error {
-	res, err := h.cli.ImagePush(context.Background(), imageTag, *pushOptions)
+func (h *ContainerHelper) PushImage(imageTag string) error {
+	res, err := h.cli.ImagePush(context.Background(), imageTag, types.ImagePushOptions{RegistryAuth: h.cfg.RegistryAuth})
 
 	if err != nil {
 		return err
@@ -55,7 +68,7 @@ func (h *ContainerHelper) PushImage(imageTag string, pushOptions *types.ImagePus
 	return nil
 }
 
-func (h *ContainerHelper) StartContainer(cfg *model.ContainerConfig) error {
+func (h *ContainerHelper) StartContainer(cfg *model.RunConfig) error {
 	ctx := context.Background()
 
 	reader, err := h.cli.ImagePull(ctx, cfg.ImageName, types.ImagePullOptions{})
@@ -66,10 +79,11 @@ func (h *ContainerHelper) StartContainer(cfg *model.ContainerConfig) error {
 
 	resp, err := h.cli.ContainerCreate(ctx, &container.Config{
 		Image: cfg.ImageName,
+		Env:   cfg.Env,
 	}, &container.HostConfig{
 		AutoRemove: cfg.AutoRemove,
 		Mounts:     cfg.Mounts,
-	}, nil, nil, cfg.ServiceName)
+	}, &network.NetworkingConfig{}, nil, cfg.ServiceName)
 	if err != nil {
 		return err
 	}

@@ -10,6 +10,7 @@ import (
 
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing/transport/http"
+	"github.com/kelseyhightower/envconfig"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
@@ -55,15 +56,25 @@ func TarFiles(dir string) (io.Reader, error) {
 	return &buf, nil
 }
 
-func CloneRepo(repoName, cloneUrl, username, token string) error {
-	log.Println(cloneUrl, username, token)
-	_, err := git.PlainClone(repoName, false, &git.CloneOptions{
+type Config struct {
+	RepoUsername string `envconfig:"REPO_USERNAME"`
+	RepoPassword string `envconfig:"REPO_PASSWORD"`
+}
+
+func CloneRepo(repoName, cloneUrl string) error {
+	var cfg Config
+	err := envconfig.Process("", &cfg)
+	if err != nil {
+		panic(err)
+	}
+
+	_, err = git.PlainClone(repoName, false, &git.CloneOptions{
 		URL:               cloneUrl,
 		Progress:          os.Stdout,
 		RecurseSubmodules: 1,
 		Auth: &http.BasicAuth{
-			Username: username,
-			Password: token,
+			Username: cfg.RepoUsername,
+			Password: cfg.RepoPassword,
 		},
 	})
 

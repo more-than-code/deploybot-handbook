@@ -1,10 +1,24 @@
 package model
 
-import "go.mongodb.org/mongo-driver/bson/primitive"
+import (
+	"github.com/docker/docker/api/types/mount"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+)
 
-type TaskRunConfig struct {
-	Script  string
-	Secrets []string `bson:",omitempty"`
+type RunConfig struct {
+	ImageName   string
+	ImageTag    string        `bson:",omitempty"`
+	ServiceName string        `bson:",omitempty"`
+	Mounts      []mount.Mount `bson:",omitempty"`
+	AutoRemove  bool          `bson:",omitempty"`
+	Env         []string
+}
+
+type BuildConfig struct {
+	ImageName string
+	ImageTag  string `bson:",omitempty"`
+	RepoUrl   string
+	RepoName  string
 }
 
 type Task struct {
@@ -18,7 +32,7 @@ type Task struct {
 	Status         string
 	UpstreamTaskId primitive.ObjectID `bson:",omitempty"`
 	StreamWebhook  string             `bson:",omitempty"`
-	Config         TaskRunConfig
+	Config         interface{}
 	Remarks        string
 	AutoRun        bool
 	Timeout        int64 // minutes
@@ -29,7 +43,7 @@ type UpdateTaskInputPayload struct {
 	UpstreamTaskId *primitive.ObjectID
 	StreamWebhook  *string
 	ScheduledAt    *primitive.DateTime
-	Config         *TaskRunConfig
+	Config         *interface{}
 	Remarks        *string
 	AutoRun        *bool
 	Timeout        *int64
@@ -53,7 +67,7 @@ type CreateTaskInputPayload struct {
 	Id             primitive.ObjectID
 	Name           string
 	ScheduledAt    primitive.DateTime `bson:",omitempty"`
-	Config         TaskRunConfig
+	Config         interface{}
 	UpstreamTaskId primitive.ObjectID `bson:",omitempty"`
 	StreamWebhook  string
 	AutoRun        bool
