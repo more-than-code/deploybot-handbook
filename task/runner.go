@@ -31,27 +31,31 @@ func NewRunner() *Runner {
 
 func (r *Runner) DoTask(t model.Task, arguments []string) error {
 	if t.Type == model.TaskBuild {
-
-		m := map[string]interface{}{}
-
-		list := t.Config.([]interface{})
-
-		for _, e := range list {
-			e2 := e.(map[string]interface{})
-			m[e2["Key"].(string)] = e2["Value"]
-		}
-
-		bs, err := json.Marshal(m)
-
-		if err != nil {
-			return err
-		}
-
 		var c model.BuildConfig
-		err = json.Unmarshal(bs, &c)
 
-		if err != nil {
-			return err
+		if conf, ok := t.Config.(model.BuildConfig); ok {
+			c = conf
+		} else {
+			m := map[string]interface{}{}
+
+			list := t.Config.([]interface{})
+
+			for _, e := range list {
+				e2 := e.(map[string]interface{})
+				m[e2["Key"].(string)] = e2["Value"]
+			}
+
+			bs, err := json.Marshal(m)
+
+			if err != nil {
+				return err
+			}
+
+			err = json.Unmarshal(bs, &c)
+
+			if err != nil {
+				return err
+			}
 		}
 
 		path := r.cfg.ProjectsPath + "/" + c.RepoName + "/"
@@ -78,26 +82,31 @@ func (r *Runner) DoTask(t model.Task, arguments []string) error {
 			return err
 		}
 	} else if t.Type == model.EventDeploy {
-		m := map[string]interface{}{}
-
-		list := t.Config.([]interface{})
-
-		for _, e := range list {
-			e2 := e.(map[string]interface{})
-			m[e2["Key"].(string)] = e2["Value"]
-		}
-
-		bs, err := json.Marshal(m)
-
-		if err != nil {
-			return err
-		}
-
 		var c model.DeployConfig
-		err = json.Unmarshal(bs, &c)
 
-		if err != nil {
-			return err
+		if conf, ok := t.Config.(model.DeployConfig); ok {
+			c = conf
+		} else {
+			m := map[string]interface{}{}
+
+			list := t.Config.([]interface{})
+
+			for _, e := range list {
+				e2 := e.(map[string]interface{})
+				m[e2["Key"].(string)] = e2["Value"]
+			}
+
+			bs, err := json.Marshal(m)
+
+			if err != nil {
+				return err
+			}
+
+			err = json.Unmarshal(bs, &c)
+
+			if err != nil {
+				return err
+			}
 		}
 
 		r.cHelper.StartContainer(&c)
