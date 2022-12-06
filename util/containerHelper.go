@@ -58,8 +58,14 @@ func (h *ContainerHelper) BuildImage(buildContext io.Reader, buidOptions *types.
 	return nil
 }
 
-func (h *ContainerHelper) PushImage(imageTag string) error {
-	res, err := h.cli.ImagePush(context.Background(), imageTag, types.ImagePushOptions{RegistryAuth: h.cfg.RegistryAuth})
+func (h *ContainerHelper) PushImage(name, tag string) error {
+	err := h.cli.ImageTag(context.Background(), name, tag)
+
+	if err != nil {
+		return err
+	}
+
+	res, err := h.cli.ImagePush(context.Background(), name, types.ImagePushOptions{RegistryAuth: h.cfg.RegistryAuth})
 
 	if err != nil {
 		return err
