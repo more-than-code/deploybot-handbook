@@ -14,7 +14,8 @@ type RunnerConfig struct {
 }
 
 type Runner struct {
-	cfg RunnerConfig
+	cfg     RunnerConfig
+	cHelper *util.ContainerHelper
 }
 
 func NewRunner() *Runner {
@@ -24,11 +25,10 @@ func NewRunner() *Runner {
 		panic(err)
 	}
 
-	return &Runner{}
+	return &Runner{cfg: cfg, cHelper: util.NewContainerHelper("unix:///var/run/docker.sock")}
 }
 
 func (r *Runner) DoTask(t model.Task, arguments []string) error {
-	helper := util.NewContainerHelper("unix:///var/run/docker.sock")
 	if t.Type == model.TaskBuild {
 
 		bs, err := json.Marshal(t.Config)
@@ -46,19 +46,19 @@ func (r *Runner) DoTask(t model.Task, arguments []string) error {
 
 		path := r.cfg.ProjectsPath + "/" + c.RepoName
 		util.CloneRepo(path, c.RepoUrl)
-		r, err := util.TarFiles(path)
+		files, err := util.TarFiles(path)
 
 		if err != nil {
 			panic(err)
 		}
 
-		err = helper.BuildImage(r, &types.ImageBuildOptions{Tags: []string{c.ImageTag}})
+		err = r.cHelper.BuildImage(files, &types.ImageBuildOptions{Tags: []string{c.ImageTag}})
 
 		if err != nil {
 			panic(err)
 		}
 
-		helper.PushImage(c.ImageName + "/" + c.ImageTag)
+		r.cHelper.PushImage(c.ImageName + "/" + c.ImageTag)
 	} else if t.Type == model.EventDeploy {
 		bs, err := json.Marshal(t.Config)
 
@@ -73,7 +73,7 @@ func (r *Runner) DoTask(t model.Task, arguments []string) error {
 			panic(err)
 		}
 
-		helper.StartContainer(&c)
+		r.cHelper.StartContainer(&c)
 	}
 
 	return nil
