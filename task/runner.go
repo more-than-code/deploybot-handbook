@@ -2,6 +2,7 @@ package task
 
 import (
 	"encoding/json"
+	"os"
 
 	"github.com/docker/docker/api/types"
 	"github.com/kelseyhightower/envconfig"
@@ -44,7 +45,9 @@ func (r *Runner) DoTask(t model.Task, arguments []string) error {
 			panic(err)
 		}
 
-		path := r.cfg.ProjectsPath + "/" + c.RepoName
+		path := r.cfg.ProjectsPath + "/" + c.RepoName + "/"
+
+		os.RemoveAll(path)
 		util.CloneRepo(path, c.RepoUrl)
 		files, err := util.TarFiles(path)
 

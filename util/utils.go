@@ -61,14 +61,14 @@ type Config struct {
 	RepoPassword string `envconfig:"REPO_PASSWORD"`
 }
 
-func CloneRepo(repoName, cloneUrl string) error {
+func CloneRepo(path, cloneUrl string) error {
 	var cfg Config
 	err := envconfig.Process("", &cfg)
 	if err != nil {
 		panic(err)
 	}
 
-	_, err = git.PlainClone(repoName, false, &git.CloneOptions{
+	_, err = git.PlainClone(path, false, &git.CloneOptions{
 		URL:               cloneUrl,
 		Progress:          os.Stdout,
 		RecurseSubmodules: 1,
