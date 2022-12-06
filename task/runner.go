@@ -72,7 +72,11 @@ func (r *Runner) DoTask(t model.Task, arguments []string) error {
 			return err
 		}
 
-		r.cHelper.PushImage(imageNameTag)
+		err = r.cHelper.PushImage(imageNameTag)
+
+		if err != nil {
+			return err
+		}
 	} else if t.Type == model.EventDeploy {
 		m := map[string]interface{}{}
 

@@ -10,10 +10,11 @@ import (
 func TestBuildImage(t *testing.T) {
 	r := NewRunner()
 	err := r.DoTask(model.Task{Type: model.TaskBuild, Config: model.BuildConfig{
-		ImageName: "binartist/mo-serive-graph",
-		ImageTag:  "latest",
-		RepoUrl:   "https://github.com/joe-and-his-friends/mo-service-graph.git",
-		RepoName:  "mo-service-graph",
+		ImageName:  "binartist/geoy-graph",
+		ImageTag:   "1.0.0",
+		RepoUrl:    "https://github.com/joe-and-his-friends/geoy-services.git",
+		RepoName:   "geoy-services",
+		Dockerfile: "./graph/app.dockerfile",
 	}}, nil)
 
 	if err != nil {
