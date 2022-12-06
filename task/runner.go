@@ -34,14 +34,14 @@ func (r *Runner) DoTask(t model.Task, arguments []string) error {
 		bs, err := json.Marshal(t.Config)
 
 		if err != nil {
-			return err
+			panic(err)
 		}
 
 		var c model.BuildConfig
 		err = json.Unmarshal(bs, &c)
 
 		if err != nil {
-			return err
+			panic(err)
 		}
 
 		path := r.cfg.ProjectsPath + "/" + c.RepoName
@@ -49,13 +49,13 @@ func (r *Runner) DoTask(t model.Task, arguments []string) error {
 		r, err := util.TarFiles(path)
 
 		if err != nil {
-			return err
+			panic(err)
 		}
 
 		err = helper.BuildImage(r, &types.ImageBuildOptions{Tags: []string{c.ImageTag}})
 
 		if err != nil {
-			return nil
+			panic(err)
 		}
 
 		helper.PushImage(c.ImageName + "/" + c.ImageTag)
@@ -63,14 +63,14 @@ func (r *Runner) DoTask(t model.Task, arguments []string) error {
 		bs, err := json.Marshal(t.Config)
 
 		if err != nil {
-			return err
+			panic(err)
 		}
 
 		var c model.DeployConfig
 		err = json.Unmarshal(bs, &c)
 
 		if err != nil {
-			return err
+			panic(err)
 		}
 
 		helper.StartContainer(&c)
