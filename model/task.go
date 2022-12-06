@@ -17,10 +17,11 @@ type DeployConfig struct {
 }
 
 type BuildConfig struct {
-	ImageName string
-	ImageTag  string `bson:",omitempty"`
-	RepoUrl   string
-	RepoName  string
+	ImageName  string
+	ImageTag   string `bson:",omitempty"`
+	Dockerfile string `bson:",omitempty"`
+	RepoUrl    string
+	RepoName   string
 }
 
 type Task struct {
