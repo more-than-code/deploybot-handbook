@@ -32,17 +32,26 @@ func NewRunner() *Runner {
 func (r *Runner) DoTask(t model.Task, arguments []string) error {
 	if t.Type == model.TaskBuild {
 
-		bs, err := json.Marshal(t.Config)
+		m := map[string]interface{}{}
+
+		list := t.Config.([]interface{})
+
+		for _, e := range list {
+			e2 := e.(map[string]interface{})
+			m[e2["Key"].(string)] = e2["Value"]
+		}
+
+		bs, err := json.Marshal(m)
 
 		if err != nil {
-			panic(err)
+			return nil
 		}
 
 		var c model.BuildConfig
 		err = json.Unmarshal(bs, &c)
 
 		if err != nil {
-			panic(err)
+			return nil
 		}
 
 		path := r.cfg.ProjectsPath + "/" + c.RepoName + "/"
@@ -52,28 +61,37 @@ func (r *Runner) DoTask(t model.Task, arguments []string) error {
 		files, err := util.TarFiles(path)
 
 		if err != nil {
-			panic(err)
+			return nil
 		}
 
 		err = r.cHelper.BuildImage(files, &types.ImageBuildOptions{Tags: []string{c.ImageTag}})
 
 		if err != nil {
-			panic(err)
+			return nil
 		}
 
 		r.cHelper.PushImage(c.ImageName + "/" + c.ImageTag)
 	} else if t.Type == model.EventDeploy {
-		bs, err := json.Marshal(t.Config)
+		m := map[string]interface{}{}
+
+		list := t.Config.([]interface{})
+
+		for _, e := range list {
+			e2 := e.(map[string]interface{})
+			m[e2["Key"].(string)] = e2["Value"]
+		}
+
+		bs, err := json.Marshal(m)
 
 		if err != nil {
-			panic(err)
+			return nil
 		}
 
 		var c model.DeployConfig
 		err = json.Unmarshal(bs, &c)
 
 		if err != nil {
-			panic(err)
+			return nil
 		}
 
 		r.cHelper.StartContainer(&c)

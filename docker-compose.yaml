@@ -13,6 +13,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./projects:/var/opt/projects
+      - ./asset/:/var/opt/asset
     restart: on-failure
 
   mongo:
@@ -46,4 +47,4 @@ services:
 
 networks:
   default:
-    name: bot-network
+    name: deploybot-network

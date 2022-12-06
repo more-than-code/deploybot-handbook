@@ -135,9 +135,9 @@ func (s *Scheduler) GhWebhookHandler() gin.HandlerFunc {
 		json.Unmarshal(body, &plRes)
 
 		for _, pl := range plRes.Payload.Pipelines {
-			if pl.Status == model.PipelineBusy {
-				continue
-			}
+			// if pl.Status == model.PipelineBusy {
+			// 	continue
+			// }
 
 			if len(pl.Tasks) == 0 {
 				continue
@@ -145,9 +145,9 @@ func (s *Scheduler) GhWebhookHandler() gin.HandlerFunc {
 
 			t := pl.Tasks[0]
 
-			if t.Status == model.TaskInProgress {
-				continue
-			}
+			// if t.Status == model.TaskInProgress {
+			// 	continue
+			// }
 
 			// update task
 			cbs, _ := json.Marshal(data.Commits)
@@ -173,6 +173,7 @@ func (s *Scheduler) GhWebhookHandler() gin.HandlerFunc {
 
 			// call stream webhook
 			body, _ = json.Marshal(model.StreamWebhook{Payload: model.StreamWebhookPayload{PipelineId: pl.Id, Task: t, Arguments: args}})
+
 			req, _ = http.NewRequest("POST", t.StreamWebhook, bytes.NewReader(body))
 			req.SetBasicAuth(s.cfg.PkUsername, s.cfg.PkPassword)
 			res, _ := http.DefaultClient.Do(req)
