@@ -64,13 +64,15 @@ func (r *Runner) DoTask(t model.Task, arguments []string) error {
 			return err
 		}
 
-		err = r.cHelper.BuildImage(files, &types.ImageBuildOptions{Dockerfile: c.Dockerfile, Tags: []string{c.ImageTag}})
+		imageNameTag := c.ImageName + ":" + c.ImageTag
+
+		err = r.cHelper.BuildImage(files, &types.ImageBuildOptions{Dockerfile: c.Dockerfile, Tags: []string{imageNameTag}})
 
 		if err != nil {
 			return err
 		}
 
-		r.cHelper.PushImage(c.ImageName, c.ImageTag)
+		r.cHelper.PushImage(imageNameTag)
 	} else if t.Type == model.EventDeploy {
 		m := map[string]interface{}{}
 
