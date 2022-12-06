@@ -5,13 +5,15 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-type RunConfig struct {
+type DeployConfig struct {
 	ImageName   string
 	ImageTag    string        `bson:",omitempty"`
 	ServiceName string        `bson:",omitempty"`
 	Mounts      []mount.Mount `bson:",omitempty"`
 	AutoRemove  bool          `bson:",omitempty"`
 	Env         []string
+	HostPort    string
+	ExposedPort string
 }
 
 type BuildConfig struct {
@@ -36,6 +38,7 @@ type Task struct {
 	Remarks        string
 	AutoRun        bool
 	Timeout        int64 // minutes
+	Type           string
 }
 
 type UpdateTaskInputPayload struct {
@@ -47,6 +50,7 @@ type UpdateTaskInputPayload struct {
 	Remarks        *string
 	AutoRun        *bool
 	Timeout        *int64
+	Type           *string
 }
 type UpdateTaskInput struct {
 	PipelineId primitive.ObjectID
@@ -72,6 +76,7 @@ type CreateTaskInputPayload struct {
 	StreamWebhook  string
 	AutoRun        bool
 	Timeout        int64
+	Type           string
 }
 type CreateTaskInput struct {
 	PipelineId primitive.ObjectID

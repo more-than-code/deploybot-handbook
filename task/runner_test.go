@@ -1,53 +1,27 @@
-package util
+package task
 
 import (
-	"fmt"
 	"testing"
 
-	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/mount"
 	"github.com/more-than-code/deploybot/model"
 )
 
 func TestBuildImage(t *testing.T) {
-
-	localHelper := NewContainerHelper("unix:///var/run/docker.sock")
-
-	path := "/var/opt/projects"
-
-	repoName := "mo-service-graph"
-
-	buf, err := TarFiles(fmt.Sprintf("%s/%s/", path, repoName))
-
-	if err != nil {
-		t.Error(err)
-	}
-
-	tag := "binartist/" + repoName
-	err = localHelper.BuildImage(buf, &types.ImageBuildOptions{Tags: []string{tag}})
+	r := NewRunner()
+	err := r.DoTask(model.Task{Type: model.TaskBuild, Config: model.BuildConfig{
+		ImageName: "binartist/mo-serive-graph",
+		ImageTag:  "latest",
+		RepoUrl:   "https://github.com/joe-and-his-friends/mo-service-graph.git",
+		RepoName:  "mo-service-graph",
+	}}, nil)
 
 	if err != nil {
 		t.Error(err)
 	}
 }
 
-func TestPushImage(t *testing.T) {
-	helper := NewContainerHelper("unix:///var/run/docker.sock")
-
-	repoName := "mo-service-graph"
-	tag := "binartist/" + repoName
-
-	err := helper.PushImage(tag)
-
-	if err != nil {
-		t.Error(err)
-	}
-
-}
-
-func TestRunImage(t *testing.T) {
-	helper := NewContainerHelper("unix:///var/run/docker.sock")
-
+func TestRunContainer(t *testing.T) {
 	env := []string{
 		"GRAPH_SERVER_PORT=:9000",
 		"USER_SERVER_URI=localhost:8001",
@@ -74,6 +48,14 @@ func TestRunImage(t *testing.T) {
 		"LOWEST_SUPPORTED_VERSION=1.17.6",
 		"DETAILS_URL=https://wordpress.uat.mohiguide.com/2022/06/02/hello-world/",
 		"GOOGLE_APPLICATION_CREDENTIALS=/var/opt/fcm/app.json",
+		"TOKEN_SECRET_KEY=123456",
 	}
-	helper.StartContainer(&model.RunConfig{Env: env, ImageName: "binartist/mo-service-graph", ImageTag: "latest", Mounts: []mount.Mount{{Source: "/var/opt/fcm", Target: "/var/opt/fcm"}}, ServiceName: "graph", AutoRemove: true})
+
+	r := NewRunner()
+	err := r.DoTask(model.Task{Type: model.TaskDeploy, Config: model.DeployConfig{ExposedPort: "9000", HostPort: "9000", Env: env, ImageName: "binartist/mo-service-graph", ImageTag: "latest", Mounts: []mount.Mount{{Type: "bind", Source: "/var/opt/fcm", Target: "/var/opt/fcm"}}, ServiceName: "graph", AutoRemove: false}}, nil)
+
+	if err != nil {
+		t.Error(err)
+	}
+
 }

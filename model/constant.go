@@ -18,3 +18,9 @@ const (
 	EventBuild  = "Build"
 	EventDeploy = "Deploy"
 )
+
+const (
+	TaskTest   = "Test"
+	TaskBuild  = "Build"
+	TaskDeploy = "Deploy"
+)

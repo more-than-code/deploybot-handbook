@@ -101,6 +101,9 @@ func (r *Repository) UpdateTask(ctx context.Context, input model.UpdateTaskInput
 	if input.Payload.Timeout != nil {
 		doc["tasks.$.timeout"] = input.Payload.Timeout
 	}
+	if input.Payload.Type != nil {
+		doc["tasks.$.type"] = input.Payload.Type
+	}
 
 	update := bson.M{"$set": doc}
 

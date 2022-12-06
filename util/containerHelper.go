@@ -10,6 +10,8 @@ import (
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/network"
 	"github.com/docker/docker/client"
+	"github.com/docker/docker/pkg/stdcopy"
+	"github.com/docker/go-connections/nat"
 	"github.com/kelseyhightower/envconfig"
 	"github.com/more-than-code/deploybot/model"
 )
@@ -68,47 +70,49 @@ func (h *ContainerHelper) PushImage(imageTag string) error {
 	return nil
 }
 
-func (h *ContainerHelper) StartContainer(cfg *model.RunConfig) error {
+func (h *ContainerHelper) StartContainer(cfg *model.DeployConfig) {
 	ctx := context.Background()
+
+	h.cli.ContainerStop(ctx, cfg.ServiceName, nil)
+	h.cli.ContainerRemove(ctx, cfg.ServiceName, types.ContainerRemoveOptions{})
 
 	reader, err := h.cli.ImagePull(ctx, cfg.ImageName, types.ImagePullOptions{})
 	if err != nil {
-		return err
+		panic(err)
 	}
 	io.Copy(os.Stdout, reader)
 
 	resp, err := h.cli.ContainerCreate(ctx, &container.Config{
-		Image: cfg.ImageName,
-		Env:   cfg.Env,
+		Image:        cfg.ImageName,
+		Env:          cfg.Env,
+		ExposedPorts: nat.PortSet{nat.Port(cfg.ExposedPort + "/tcp"): struct{}{}},
 	}, &container.HostConfig{
-		AutoRemove: cfg.AutoRemove,
-		Mounts:     cfg.Mounts,
+		AutoRemove:   cfg.AutoRemove,
+		Mounts:       cfg.Mounts,
+		PortBindings: nat.PortMap{nat.Port(cfg.HostPort + "/tcp"): []nat.PortBinding{{HostPort: cfg.HostPort, HostIP: "0.0.0.0"}}},
 	}, &network.NetworkingConfig{}, nil, cfg.ServiceName)
 	if err != nil {
-		return err
+		panic(err)
 	}
 
 	if err := h.cli.ContainerStart(ctx, resp.ID, types.ContainerStartOptions{}); err != nil {
-		return err
+		panic(err)
 	}
 
-	// statusCh, errCh := h.cli.ContainerWait(ctx, resp.ID, container.WaitConditionNotRunning)
-	// var err2 error
-	// select {
-	// case err := <-errCh:
-	// 	if err != nil {
-	// 		log.Println(err)
-	// 		err2 = err
-	// 	}
-	// case <-statusCh:
-	// }
+	statusCh, errCh := h.cli.ContainerWait(ctx, resp.ID, container.WaitConditionNotRunning)
 
-	// out, err := h.cli.ContainerLogs(ctx, resp.ID, types.ContainerLogsOptions{ShowStdout: true})
-	// if err != nil {
-	// 	return err
-	// }
+	select {
+	case err := <-errCh:
+		if err != nil {
+			panic(err)
+		}
+	case <-statusCh:
+	}
 
-	// stdcopy.StdCopy(os.Stdout, os.Stderr, out)
+	out, err := h.cli.ContainerLogs(ctx, resp.ID, types.ContainerLogsOptions{ShowStdout: true})
+	if err != nil {
+		panic(err)
+	}
 
-	return nil
+	stdcopy.StdCopy(os.Stdout, os.Stderr, out)
 }

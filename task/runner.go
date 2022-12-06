@@ -1,6 +1,8 @@
 package task
 
 import (
+	"encoding/json"
+
 	"github.com/docker/docker/api/types"
 	"github.com/kelseyhightower/envconfig"
 	"github.com/more-than-code/deploybot/model"
@@ -8,6 +10,7 @@ import (
 )
 
 type RunnerConfig struct {
+	ProjectsPath string `envconfig:"PROJECTS_PATH"`
 }
 
 type Runner struct {
@@ -24,17 +27,53 @@ func NewRunner() *Runner {
 	return &Runner{}
 }
 
-func (r *Runner) DoTask(t model.Task, args []string) error {
+func (r *Runner) DoTask(t model.Task, arguments []string) error {
 	helper := util.NewContainerHelper("unix:///var/run/docker.sock")
-	if c, ok := t.Config.(model.BuildConfig); ok {
+	if t.Type == model.TaskBuild {
 
-		util.CloneRepo(c.RepoName, c.RepoUrl)
-		r, err := util.TarFiles("/var/opt/projects/" + c.RepoName)
+		bs, err := json.Marshal(t.Config)
 
 		if err != nil {
 			return err
 		}
-		helper.BuildImage(r, &types.ImageBuildOptions{})
+
+		var c model.BuildConfig
+		err = json.Unmarshal(bs, &c)
+
+		if err != nil {
+			return err
+		}
+
+		path := r.cfg.ProjectsPath + "/" + c.RepoName
+		util.CloneRepo(path, c.RepoUrl)
+		r, err := util.TarFiles(path)
+
+		if err != nil {
+			return err
+		}
+
+		err = helper.BuildImage(r, &types.ImageBuildOptions{Tags: []string{c.ImageTag}})
+
+		if err != nil {
+			return nil
+		}
+
+		helper.PushImage(c.ImageName + "/" + c.ImageTag)
+	} else if t.Type == model.EventDeploy {
+		bs, err := json.Marshal(t.Config)
+
+		if err != nil {
+			return err
+		}
+
+		var c model.DeployConfig
+		err = json.Unmarshal(bs, &c)
+
+		if err != nil {
+			return err
+		}
+
+		helper.StartContainer(&c)
 	}
 
 	return nil
