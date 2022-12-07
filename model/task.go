@@ -4,6 +4,14 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
+type BuildConfig struct {
+	ImageName  string
+	ImageTag   string `bson:",omitempty"`
+	Dockerfile string `bson:",omitempty"`
+	RepoUrl    string
+	RepoName   string
+}
+
 type DeployConfig struct {
 	ImageName   string
 	ImageTag    string `bson:",omitempty"`
@@ -18,12 +26,8 @@ type DeployConfig struct {
 	NetworkName string   `bson:",omitempty"`
 }
 
-type BuildConfig struct {
-	ImageName  string
-	ImageTag   string `bson:",omitempty"`
-	Dockerfile string `bson:",omitempty"`
-	RepoUrl    string
-	RepoName   string
+type RestartConfig struct {
+	ServiceName string
 }
 
 type Task struct {

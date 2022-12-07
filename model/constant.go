@@ -20,7 +20,8 @@ const (
 )
 
 const (
-	TaskTest   = "Test"
-	TaskBuild  = "Build"
-	TaskDeploy = "Deploy"
+	TaskTest    = "Test"
+	TaskBuild   = "Build"
+	TaskDeploy  = "Deploy"
+	TaskRestart = "Restart"
 )

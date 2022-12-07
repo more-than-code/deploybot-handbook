@@ -68,7 +68,7 @@ func (r *Runner) DoTask(t model.Task, arguments []string) error {
 		}
 
 		r.cHelper.PushImage(c.ImageName)
-	} else if t.Type == model.EventDeploy {
+	} else if t.Type == model.TaskDeploy {
 		var c model.DeployConfig
 
 		if conf, ok := t.Config.(model.DeployConfig); ok {
@@ -88,6 +88,25 @@ func (r *Runner) DoTask(t model.Task, arguments []string) error {
 		}
 
 		r.cHelper.StartContainer(&c)
+	} else if t.Type == model.TaskRestart {
+		var c model.RestartConfig
+
+		if conf, ok := t.Config.(model.RestartConfig); ok {
+			c = conf
+		} else {
+			bs, err := json.Marshal(util.InterfaceOfSliceToMap(t.Config.([]interface{})))
+
+			if err != nil {
+				return err
+			}
+
+			err = json.Unmarshal(bs, &c)
+
+			if err != nil {
+				return err
+			}
+		}
+		r.cHelper.RestartContainer(&c)
 	}
 
 	return nil

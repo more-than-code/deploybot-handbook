@@ -146,3 +146,7 @@ func (h *ContainerHelper) StartContainer(cfg *model.DeployConfig) {
 
 	stdcopy.StdCopy(os.Stdout, os.Stderr, out)
 }
+
+func (h *ContainerHelper) RestartContainer(cfg *model.RestartConfig) error {
+	return h.cli.ContainerRestart(context.Background(), cfg.ServiceName, nil)
+}
