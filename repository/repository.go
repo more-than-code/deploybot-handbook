@@ -8,10 +8,6 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-type CacheGetHandlerFunc func(ctx context.Context) interface{}
-type CacheUpdateHandlerFunc func(ctx context.Context)
-type CacheClearHandlerFunc func(ctx context.Context)
-
 type Repository struct {
 	mongoClient *mongo.Client
 }
