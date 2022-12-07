@@ -5,18 +5,28 @@ import (
 
 	"github.com/docker/docker/api/types/mount"
 	"github.com/more-than-code/deploybot/model"
+	"github.com/more-than-code/deploybot/util"
 )
 
 func TestBuildImage(t *testing.T) {
 	r := NewRunner()
 	err := r.DoTask(model.Task{Type: model.TaskBuild, Config: model.BuildConfig{
 		ImageName:  "binartist/geoy-graph",
-		ImageTag:   "1.0.0",
+		ImageTag:   "latest",
 		RepoUrl:    "https://github.com/joe-and-his-friends/geoy-services.git",
 		RepoName:   "geoy-services",
-		Dockerfile: "./graph/app.dockerfile",
+		Dockerfile: "graph/app.dockerfile",
 	}}, nil)
 
+	if err != nil {
+		t.Error(err)
+	}
+}
+
+func TestPushImage(t *testing.T) {
+	h := util.NewContainerHelper("unix:///var/run/docker.sock")
+
+	err := h.PushImage("binartist/geoy-graph")
 	if err != nil {
 		t.Error(err)
 	}

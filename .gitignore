@@ -3,3 +3,5 @@
 .*env
 *.yaml
 pipes
+__*
+projects

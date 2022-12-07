@@ -76,11 +76,7 @@ func (r *Runner) DoTask(t model.Task, arguments []string) error {
 			return err
 		}
 
-		err = r.cHelper.PushImage(imageNameTag)
-
-		if err != nil {
-			return err
-		}
+		r.cHelper.PushImage(c.ImageName)
 	} else if t.Type == model.EventDeploy {
 		var c model.DeployConfig
 

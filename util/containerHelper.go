@@ -2,6 +2,8 @@ package util
 
 import (
 	"context"
+	"encoding/base64"
+	"encoding/json"
 	"io"
 	"log"
 	"os"
@@ -17,7 +19,8 @@ import (
 )
 
 type ContainerHelperConfig struct {
-	RegistryAuth string `envconfig:"REGISTRY_AUTH"`
+	DhUsername string `envconfig:DH_USERNAME`
+	DhPassword string `envconfig:DH_PASSWORD`
 }
 
 type ContainerHelper struct {
@@ -59,14 +62,21 @@ func (h *ContainerHelper) BuildImage(buildContext io.Reader, buidOptions *types.
 }
 
 func (h *ContainerHelper) PushImage(name string) error {
-	res, err := h.cli.ImagePush(context.Background(), name, types.ImagePushOptions{RegistryAuth: h.cfg.RegistryAuth})
+	authConfig := types.AuthConfig{
+		Username: h.cfg.DhUsername,
+		Password: h.cfg.DhPassword,
+	}
+	encodedJSON, _ := json.Marshal(authConfig)
+	authStr := base64.URLEncoding.EncodeToString(encodedJSON)
+
+	res, err := h.cli.ImagePush(context.Background(), name, types.ImagePushOptions{RegistryAuth: authStr})
 
 	if err != nil {
 		return err
 	}
 
-	res.Close()
-
+	defer res.Close()
+	io.Copy(os.Stdout, res)
 	return nil
 }
 
