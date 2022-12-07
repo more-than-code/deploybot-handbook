@@ -114,7 +114,13 @@ func (h *ContainerHelper) StartContainer(cfg *model.DeployConfig) {
 		hConfig.Mounts = []mount.Mount{{Type: "bind", Source: cfg.MountSource, Target: cfg.MountTarget}}
 	}
 
-	resp, err := h.cli.ContainerCreate(ctx, cConfig, hConfig, &network.NetworkingConfig{}, nil, cfg.ServiceName)
+	nConfig := &network.NetworkingConfig{}
+
+	if cfg.NetworkName != "" && cfg.NetworkId != "" {
+		nConfig.EndpointsConfig = map[string]*network.EndpointSettings{cfg.NetworkName: {NetworkID: cfg.NetworkId}}
+	}
+
+	resp, err := h.cli.ContainerCreate(ctx, cConfig, hConfig, nConfig, nil, cfg.ServiceName)
 	if err != nil {
 		panic(err)
 	}

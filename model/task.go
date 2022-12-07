@@ -11,9 +11,11 @@ type DeployConfig struct {
 	MountSource string `bson:",omitempty"`
 	MountTarget string `bson:",omitempty"`
 	AutoRemove  bool
-	Env         []string
-	HostPort    string
-	ExposedPort string
+	Env         []string `bson:",omitempty"`
+	HostPort    string   `bson:",omitempty"`
+	ExposedPort string   `bson:",omitempty"`
+	NetworkId   string   `bson:",omitempty"`
+	NetworkName string   `bson:",omitempty"`
 }
 
 type BuildConfig struct {
