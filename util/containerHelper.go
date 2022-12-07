@@ -10,6 +10,7 @@ import (
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
+	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/docker/api/types/network"
 	"github.com/docker/docker/client"
 	"github.com/docker/docker/pkg/stdcopy"
@@ -92,15 +93,28 @@ func (h *ContainerHelper) StartContainer(cfg *model.DeployConfig) {
 	}
 	io.Copy(os.Stdout, reader)
 
-	resp, err := h.cli.ContainerCreate(ctx, &container.Config{
-		Image:        cfg.ImageName,
-		Env:          cfg.Env,
-		ExposedPorts: nat.PortSet{nat.Port(cfg.ExposedPort + "/tcp"): struct{}{}},
-	}, &container.HostConfig{
-		AutoRemove:   cfg.AutoRemove,
-		Mounts:       cfg.Mounts,
-		PortBindings: nat.PortMap{nat.Port(cfg.HostPort + "/tcp"): []nat.PortBinding{{HostPort: cfg.HostPort, HostIP: "0.0.0.0"}}},
-	}, &network.NetworkingConfig{}, nil, cfg.ServiceName)
+	cConfig := &container.Config{
+		Image: cfg.ImageName,
+		Env:   cfg.Env,
+	}
+
+	if cfg.ExposedPort != "" {
+		cConfig.ExposedPorts = nat.PortSet{nat.Port(cfg.ExposedPort + "/tcp"): struct{}{}}
+	}
+
+	hConfig := &container.HostConfig{
+		AutoRemove: cfg.AutoRemove,
+	}
+
+	if cfg.HostPort != "" {
+		hConfig.PortBindings = nat.PortMap{nat.Port(cfg.HostPort + "/tcp"): []nat.PortBinding{{HostPort: cfg.HostPort, HostIP: "0.0.0.0"}}}
+	}
+
+	if cfg.MountSource != "" && cfg.MountTarget != "" {
+		hConfig.Mounts = []mount.Mount{{Type: "bind", Source: cfg.MountSource, Target: cfg.MountTarget}}
+	}
+
+	resp, err := h.cli.ContainerCreate(ctx, cConfig, hConfig, &network.NetworkingConfig{}, nil, cfg.ServiceName)
 	if err != nil {
 		panic(err)
 	}

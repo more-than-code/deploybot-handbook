@@ -36,16 +36,7 @@ func (r *Runner) DoTask(t model.Task, arguments []string) error {
 		if conf, ok := t.Config.(model.BuildConfig); ok {
 			c = conf
 		} else {
-			m := map[string]interface{}{}
-
-			list := t.Config.([]interface{})
-
-			for _, e := range list {
-				e2 := e.(map[string]interface{})
-				m[e2["Key"].(string)] = e2["Value"]
-			}
-
-			bs, err := json.Marshal(m)
+			bs, err := json.Marshal(util.InterfaceOfSliceToMap(t.Config.([]interface{})))
 
 			if err != nil {
 				return err
@@ -83,16 +74,7 @@ func (r *Runner) DoTask(t model.Task, arguments []string) error {
 		if conf, ok := t.Config.(model.DeployConfig); ok {
 			c = conf
 		} else {
-			m := map[string]interface{}{}
-
-			list := t.Config.([]interface{})
-
-			for _, e := range list {
-				e2 := e.(map[string]interface{})
-				m[e2["Key"].(string)] = e2["Value"]
-			}
-
-			bs, err := json.Marshal(m)
+			bs, err := json.Marshal(util.InterfaceOfSliceToMap(t.Config.([]interface{})))
 
 			if err != nil {
 				return err

@@ -101,3 +101,14 @@ func StructToBsonDoc(source interface{}) bson.M {
 
 	return doc
 }
+
+func InterfaceOfSliceToMap(source []interface{}) map[string]interface{} {
+	m := map[string]interface{}{}
+
+	for _, e := range source {
+		e2 := e.(map[string]interface{})
+		m[e2["Key"].(string)] = e2["Value"]
+	}
+
+	return m
+}

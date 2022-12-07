@@ -3,7 +3,6 @@ package task
 import (
 	"testing"
 
-	"github.com/docker/docker/api/types/mount"
 	"github.com/more-than-code/deploybot/model"
 	"github.com/more-than-code/deploybot/util"
 )
@@ -63,7 +62,7 @@ func TestRunContainer(t *testing.T) {
 	}
 
 	r := NewRunner()
-	err := r.DoTask(model.Task{Type: model.TaskDeploy, Config: model.DeployConfig{ExposedPort: "9000", HostPort: "9000", Env: env, ImageName: "binartist/mo-service-graph", ImageTag: "latest", Mounts: []mount.Mount{{Type: "bind", Source: "/var/opt/fcm", Target: "/var/opt/fcm"}}, ServiceName: "graph", AutoRemove: false}}, nil)
+	err := r.DoTask(model.Task{Type: model.TaskDeploy, Config: model.DeployConfig{ExposedPort: "9000", HostPort: "9000", Env: env, ImageName: "binartist/mo-service-graph", ImageTag: "latest", ServiceName: "graph", AutoRemove: false}}, nil)
 
 	if err != nil {
 		t.Error(err)
