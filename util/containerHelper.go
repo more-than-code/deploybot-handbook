@@ -19,8 +19,8 @@ import (
 )
 
 type ContainerHelperConfig struct {
-	DhUsername string `envconfig:DH_USERNAME`
-	DhPassword string `envconfig:DH_PASSWORD`
+	DhUsername string `envconfig:"DH_USERNAME"`
+	DhPassword string `envconfig:"DH_PASSWORD"`
 }
 
 type ContainerHelper struct {
