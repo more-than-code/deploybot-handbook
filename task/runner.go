@@ -87,7 +87,9 @@ func (r *Runner) DoTask(t model.Task, arguments []string) error {
 			}
 		}
 
-		r.cHelper.StartContainer(&c)
+		go func() {
+			r.cHelper.StartContainer(&c)
+		}()
 	} else if t.Type == model.TaskRestart {
 		var c model.RestartConfig
 
