@@ -33,26 +33,27 @@ func (r *Runner) DoTask(t model.Task, arguments []string) error {
 	if t.Type == model.TaskBuild {
 		var c model.BuildConfig
 
-		if conf, ok := t.Config.(model.BuildConfig); ok {
-			c = conf
-		} else {
-			bs, err := json.Marshal(util.InterfaceOfSliceToMap(t.Config.([]interface{})))
+		bs, err := json.Marshal(t.Config)
 
-			if err != nil {
-				return err
-			}
+		if err != nil {
+			return err
+		}
 
-			err = json.Unmarshal(bs, &c)
+		err = json.Unmarshal(bs, &c)
 
-			if err != nil {
-				return err
-			}
+		if err != nil {
+			return err
 		}
 
 		path := r.cfg.ProjectsPath + "/" + c.RepoName + "/"
 
 		os.RemoveAll(path)
-		util.CloneRepo(path, c.RepoUrl)
+		err = util.CloneRepo(path, c.RepoUrl)
+
+		if err != nil {
+			return err
+		}
+
 		files, err := util.TarFiles(path)
 
 		if err != nil {
@@ -71,20 +72,16 @@ func (r *Runner) DoTask(t model.Task, arguments []string) error {
 	} else if t.Type == model.TaskDeploy {
 		var c model.DeployConfig
 
-		if conf, ok := t.Config.(model.DeployConfig); ok {
-			c = conf
-		} else {
-			bs, err := json.Marshal(util.InterfaceOfSliceToMap(t.Config.([]interface{})))
+		bs, err := json.Marshal(t.Config)
 
-			if err != nil {
-				return err
-			}
+		if err != nil {
+			return err
+		}
 
-			err = json.Unmarshal(bs, &c)
+		err = json.Unmarshal(bs, &c)
 
-			if err != nil {
-				return err
-			}
+		if err != nil {
+			return err
 		}
 
 		go func() {
@@ -93,21 +90,18 @@ func (r *Runner) DoTask(t model.Task, arguments []string) error {
 	} else if t.Type == model.TaskRestart {
 		var c model.RestartConfig
 
-		if conf, ok := t.Config.(model.RestartConfig); ok {
-			c = conf
-		} else {
-			bs, err := json.Marshal(util.InterfaceOfSliceToMap(t.Config.([]interface{})))
+		bs, err := json.Marshal(t.Config)
 
-			if err != nil {
-				return err
-			}
-
-			err = json.Unmarshal(bs, &c)
-
-			if err != nil {
-				return err
-			}
+		if err != nil {
+			return err
 		}
+
+		err = json.Unmarshal(bs, &c)
+
+		if err != nil {
+			return err
+		}
+
 		r.cHelper.RestartContainer(&c)
 	}
 

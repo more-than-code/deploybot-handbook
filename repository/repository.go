@@ -2,8 +2,11 @@ package repository
 
 import (
 	"context"
+	"reflect"
 
 	"github.com/kelseyhightower/envconfig"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/bsontype"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -23,7 +26,13 @@ func NewRepository() (*Repository, error) {
 		panic(err)
 	}
 
-	mongoClient, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(cfg.MongoUri))
+	tM := reflect.TypeOf(bson.M{})
+
+	reg := bson.NewRegistryBuilder().RegisterTypeMapEntry(bsontype.EmbeddedDocument, tM).Build()
+
+	clientOpts := options.Client().SetRegistry(reg).ApplyURI(cfg.MongoUri)
+
+	mongoClient, err := mongo.Connect(context.TODO(), clientOpts)
 	if err != nil {
 		panic(err)
 	}
