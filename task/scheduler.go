@@ -83,16 +83,39 @@ func (s *Scheduler) StreamWebhookHandler() gin.HandlerFunc {
 
 		log.Println(sw.Payload)
 
+		res, err := http.Get(fmt.Sprintf("%s/task/%s/%s", s.cfg.ApiBaseUrl, sw.Payload.PipelineId.Hex(), sw.Payload.TaskId.Hex()))
+
+		if err != nil {
+			log.Println(err)
+			ctx.JSON(http.StatusBadRequest, api.WebhookResponse{Msg: err.Error(), Code: api.CodeServerError})
+
+			return
+		}
+
+		if res.StatusCode != 200 {
+			log.Println(res.Body)
+			ctx.JSON(http.StatusBadRequest, api.WebhookResponse{Msg: api.MsgClientError, Code: api.CodeClientError})
+
+			return
+		}
+
+		body, _ = io.ReadAll(res.Body)
+
+		var tRes api.GetTaskResponse
+		json.Unmarshal(body, &tRes)
+
+		task := tRes.Payload.Task
+
 		var timer *time.Timer
-		if sw.Payload.Task.Timeout > 0 {
-			timer = s.cleanUp(time.Minute*time.Duration(sw.Payload.Task.Timeout), func() {
-				s.updateTaskStatus(sw.Payload.PipelineId, sw.Payload.Task.Id, model.TaskTimedOut)
+		if task.Timeout > 0 {
+			timer = s.cleanUp(time.Minute*time.Duration(task.Timeout), func() {
+				s.updateTaskStatus(sw.Payload.PipelineId, task.Id, model.TaskTimedOut)
 			})
 		}
 
 		go func() {
-			s.updateTaskStatus(sw.Payload.PipelineId, sw.Payload.Task.Id, model.TaskInProgress)
-			err := s.runner.DoTask(sw.Payload.Task, sw.Payload.Arguments)
+			s.updateTaskStatus(sw.Payload.PipelineId, task.Id, model.TaskInProgress)
+			err := s.runner.DoTask(*task, sw.Payload.Arguments)
 
 			if timer != nil {
 				timer.Stop()
@@ -100,9 +123,9 @@ func (s *Scheduler) StreamWebhookHandler() gin.HandlerFunc {
 
 			if err != nil {
 				log.Println(err)
-				s.ProcessPostTask(sw.Payload.PipelineId, sw.Payload.Task.Id, model.TaskFailed)
+				s.ProcessPostTask(sw.Payload.PipelineId, task.Id, model.TaskFailed)
 			} else {
-				s.ProcessPostTask(sw.Payload.PipelineId, sw.Payload.Task.Id, model.TaskDone)
+				s.ProcessPostTask(sw.Payload.PipelineId, task.Id, model.TaskDone)
 			}
 		}()
 
@@ -172,7 +195,7 @@ func (s *Scheduler) GhWebhookHandler() gin.HandlerFunc {
 			http.DefaultClient.Do(req)
 
 			// call stream webhook
-			body, _ = json.Marshal(model.StreamWebhook{Payload: model.StreamWebhookPayload{PipelineId: pl.Id, Task: t, Arguments: args}})
+			body, _ = json.Marshal(model.StreamWebhook{Payload: model.StreamWebhookPayload{PipelineId: pl.Id, TaskId: t.Id, Arguments: args}})
 
 			req, _ = http.NewRequest("POST", t.StreamWebhook, bytes.NewReader(body))
 			req.SetBasicAuth(s.cfg.PkUsername, s.cfg.PkPassword)

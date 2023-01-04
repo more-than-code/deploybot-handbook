@@ -105,7 +105,7 @@ func (a *Api) PutTaskStatus() gin.HandlerFunc {
 				}
 
 				for _, t := range pl.Tasks {
-					body, _ := json.Marshal(model.StreamWebhook{Payload: model.StreamWebhookPayload{PipelineId: pl.Id, Task: t, Arguments: pl.Arguments}})
+					body, _ := json.Marshal(model.StreamWebhook{Payload: model.StreamWebhookPayload{PipelineId: pl.Id, TaskId: t.Id, Arguments: pl.Arguments}})
 
 					req, _ := http.NewRequest("POST", t.StreamWebhook, bytes.NewReader(body))
 					req.SetBasicAuth(a.cfg.PkUsername, a.cfg.PkPassword)
