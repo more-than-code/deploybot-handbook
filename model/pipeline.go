@@ -3,19 +3,19 @@ package model
 import "go.mongodb.org/mongo-driver/bson/primitive"
 
 type Pipeline struct {
-	Id            primitive.ObjectID `bson:"_id"`
-	Name          string
-	CreatedAt     primitive.DateTime
-	UpdatedAt     primitive.DateTime
-	ExecutedAt    primitive.DateTime
-	StoppedAt     primitive.DateTime
-	ScheduledAt   primitive.DateTime
-	Status        string
-	Arguments     []string
-	Tasks         []Task
-	RepoWatched   string
-	BranchWatched string
-	AutoRun       bool
+	Id            primitive.ObjectID `json:"id" bson:"_id"`
+	Name          string             `json:"name"`
+	CreatedAt     primitive.DateTime `json:"createAt"`
+	UpdatedAt     primitive.DateTime `json:"updateAt"`
+	ExecutedAt    primitive.DateTime `json:"executedAt"`
+	StoppedAt     primitive.DateTime `json:"stoppedAt"`
+	ScheduledAt   primitive.DateTime `json:"scheduledAt"`
+	Status        string             `json:"status"`
+	Arguments     []string           `json:"argumentss"`
+	Tasks         []Task             `json:"tasks"`
+	RepoWatched   string             `json:"repoWatched"`
+	BranchWatched string             `json:"branchWatched"`
+	AutoRun       bool               `json:"autoRun"`
 }
 
 type CreatePipelineInputPayload struct {
@@ -45,6 +45,11 @@ type GetPipelinesInput struct {
 	RepoWatched   *string
 	BranchWatched *string
 	AutoRun       *bool
+}
+
+type GetPipelinesOutput struct {
+	TotalCount int        `json:"totalCount"`
+	Items      []Pipeline `json:"items"`
 }
 
 type UpdatePipelineInputPayload struct {

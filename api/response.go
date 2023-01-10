@@ -39,14 +39,10 @@ type PostPipelineResponse struct {
 	Payload PostPipelineResponsePayload
 }
 
-type GetPipelinesResponsePayload struct {
-	Pipelines []*model.Pipeline
-}
-
 type GetPipelinesResponse struct {
-	Code    int
-	Msg     string
-	Payload GetPipelinesResponsePayload
+	Code    int                       `json:"code"`
+	Msg     string                    `json:"msg"`
+	Payload *model.GetPipelinesOutput `json:"payload"`
 }
 
 type GetPipelineResponsePayload struct {

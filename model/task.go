@@ -5,47 +5,47 @@ import (
 )
 
 type BuildConfig struct {
-	ImageName  string
-	ImageTag   string `bson:",omitempty"`
-	Dockerfile string `bson:",omitempty"`
-	RepoUrl    string
-	RepoName   string
+	ImageName  string `json:"imageName"`
+	ImageTag   string `json:"imageTag" bson:",omitempty"`
+	Dockerfile string `json:"dockerfile" bson:",omitempty"`
+	RepoUrl    string `json:"repoUrl"`
+	RepoName   string `json:"repoName"`
 }
 
 type DeployConfig struct {
-	ImageName   string
-	ImageTag    string `bson:",omitempty"`
-	ServiceName string `bson:",omitempty"`
-	MountSource string `bson:",omitempty"`
-	MountTarget string `bson:",omitempty"`
-	AutoRemove  bool
-	Env         []string `bson:",omitempty"`
-	HostPort    string   `bson:",omitempty"`
-	ExposedPort string   `bson:",omitempty"`
-	NetworkId   string   `bson:",omitempty"`
-	NetworkName string   `bson:",omitempty"`
+	ImageName   string   `json:"imageName"`
+	ImageTag    string   `json:"imageTag" bson:",omitempty"`
+	ServiceName string   `json:"serviceName" bson:",omitempty"`
+	MountSource string   `json:"mountSource" bson:",omitempty"`
+	MountTarget string   `json:"mountTarget" bson:",omitempty"`
+	AutoRemove  bool     `json:"autoRemove"`
+	Env         []string `json:"env" bson:",omitempty"`
+	HostPort    string   `json:"hostPort" bson:",omitempty"`
+	ExposedPort string   `json:"exposedPort" bson:",omitempty"`
+	NetworkId   string   `json:"networkId" bson:",omitempty"`
+	NetworkName string   `json:"networkName" bson:",omitempty"`
 }
 
 type RestartConfig struct {
-	ServiceName string
+	ServiceName string `json:"serviceName"`
 }
 
 type Task struct {
-	Id             primitive.ObjectID
-	Name           string
-	CreatedAt      primitive.DateTime
-	UpdatedAt      primitive.DateTime
-	ExecutedAt     primitive.DateTime
-	StoppedAt      primitive.DateTime
-	ScheduledAt    primitive.DateTime
-	Status         string
-	UpstreamTaskId primitive.ObjectID `bson:",omitempty"`
-	StreamWebhook  string             `bson:",omitempty"`
-	Config         interface{}
-	Remarks        string
-	AutoRun        bool
-	Timeout        int64 // minutes
-	Type           string
+	Id             primitive.ObjectID `json:"id"`
+	Name           string             `json:"name"`
+	CreatedAt      primitive.DateTime `json:"createdAt"`
+	UpdatedAt      primitive.DateTime `json:"updatedAt"`
+	ExecutedAt     primitive.DateTime `json:"executedAt"`
+	StoppedAt      primitive.DateTime `json:"stoppedAt"`
+	ScheduledAt    primitive.DateTime `json:"scheduledAt"`
+	Status         string             `json:"status"`
+	UpstreamTaskId primitive.ObjectID `json:"upstreamTaskId" bson:",omitempty"`
+	StreamWebhook  string             `json:"streamWebhook" bson:",omitempty"`
+	Config         interface{}        `json:"config"`
+	Remarks        string             `json:"remarks"`
+	AutoRun        bool               `json:"autoRun"`
+	Timeout        int64              `json:"timeout"` // minutes
+	Type           string             `json:"type"`
 }
 
 type UpdateTaskInputPayload struct {

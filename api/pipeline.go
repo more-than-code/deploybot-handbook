@@ -56,14 +56,14 @@ func (a *Api) GetPipelines() gin.HandlerFunc {
 			ar = &cVal
 		}
 
-		pls, err := a.repo.GetPipelines(ctx, model.GetPipelinesInput{RepoWatched: rw, BranchWatched: bw, AutoRun: ar})
+		output, err := a.repo.GetPipelines(ctx, model.GetPipelinesInput{RepoWatched: rw, BranchWatched: bw, AutoRun: ar})
 
 		if err != nil {
 			ctx.JSON(http.StatusBadRequest, GetPipelinesResponse{Code: CodeClientError, Msg: err.Error()})
 			return
 		}
 
-		ctx.JSON(http.StatusOK, GetPipelinesResponse{Payload: GetPipelinesResponsePayload{pls}})
+		ctx.JSON(http.StatusOK, GetPipelinesResponse{Payload: output})
 	}
 }
 

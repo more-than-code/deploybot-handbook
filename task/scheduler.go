@@ -157,7 +157,7 @@ func (s *Scheduler) GhWebhookHandler() gin.HandlerFunc {
 		var plRes api.GetPipelinesResponse
 		json.Unmarshal(body, &plRes)
 
-		for _, pl := range plRes.Payload.Pipelines {
+		for _, pl := range plRes.Payload.Items {
 			// if pl.Status == model.PipelineBusy {
 			// 	continue
 			// }

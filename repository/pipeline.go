@@ -35,7 +35,7 @@ func (r *Repository) DeletePipeline(ctx context.Context, id primitive.ObjectID) 
 	return err
 }
 
-func (r *Repository) GetPipelines(ctx context.Context, input model.GetPipelinesInput) ([]*model.Pipeline, error) {
+func (r *Repository) GetPipelines(ctx context.Context, input model.GetPipelinesInput) (*model.GetPipelinesOutput, error) {
 	coll := r.mongoClient.Database("pipeline").Collection("pipelines")
 
 	filter := bson.M{}
@@ -56,12 +56,14 @@ func (r *Repository) GetPipelines(ctx context.Context, input model.GetPipelinesI
 		return nil, err
 	}
 
-	var pipelines []*model.Pipeline
-	if err = cursor.All(ctx, &pipelines); err != nil {
+	var output model.GetPipelinesOutput
+	if err = cursor.All(ctx, &output.Items); err != nil {
 		return nil, err
 	}
 
-	return pipelines, nil
+	output.TotalCount = len(output.Items)
+
+	return &output, nil
 }
 
 func (r *Repository) GetPipeline(ctx context.Context, input model.GetPipelineInput) (*model.Pipeline, error) {
