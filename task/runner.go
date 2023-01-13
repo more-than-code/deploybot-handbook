@@ -12,6 +12,7 @@ import (
 
 type RunnerConfig struct {
 	ProjectsPath string `envconfig:"PROJECTS_PATH"`
+	DockerHost   string `envconfig:"DOCKER_HOST"`
 }
 
 type Runner struct {
@@ -26,7 +27,7 @@ func NewRunner() *Runner {
 		panic(err)
 	}
 
-	return &Runner{cfg: cfg, cHelper: util.NewContainerHelper("tcp://127.0.0.1:1234")}
+	return &Runner{cfg: cfg, cHelper: util.NewContainerHelper(cfg.DockerHost)}
 }
 
 func (r *Runner) DoTask(t model.Task, arguments []string) error {
