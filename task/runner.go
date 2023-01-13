@@ -26,7 +26,7 @@ func NewRunner() *Runner {
 		panic(err)
 	}
 
-	return &Runner{cfg: cfg, cHelper: util.NewContainerHelper("unix:///run/buildkit/buildkitd.sock")}
+	return &Runner{cfg: cfg, cHelper: util.NewContainerHelper("tcp://127.0.0.1:1234")}
 }
 
 func (r *Runner) DoTask(t model.Task, arguments []string) error {
