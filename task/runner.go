@@ -62,7 +62,7 @@ func (r *Runner) DoTask(t model.Task, arguments []string) error {
 
 		imageNameTag := c.ImageName + ":" + c.ImageTag
 
-		err = r.cHelper.BuildImage(files, &types.ImageBuildOptions{Dockerfile: c.Dockerfile, Tags: []string{imageNameTag}})
+		err = r.cHelper.BuildImage(files, &types.ImageBuildOptions{Dockerfile: c.Dockerfile, Tags: []string{imageNameTag}, Version: types.BuilderBuildKit})
 
 		if err != nil {
 			return err
