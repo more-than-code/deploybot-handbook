@@ -26,7 +26,7 @@ func NewRunner() *Runner {
 		panic(err)
 	}
 
-	return &Runner{cfg: cfg, cHelper: util.NewContainerHelper("unix:///var/run/docker.sock")}
+	return &Runner{cfg: cfg, cHelper: util.NewContainerHelper("unix:///run/buildkit/buildkitd.sock")}
 }
 
 func (r *Runner) DoTask(t model.Task, arguments []string) error {
