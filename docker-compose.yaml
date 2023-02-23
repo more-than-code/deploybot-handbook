@@ -1,6 +1,6 @@
 services:
   bot:
-    image: binartist/deploybot
+    image: binartist/deploybot-backend
     container_name: bot
     logging:
       options:
