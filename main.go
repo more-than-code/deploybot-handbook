@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/gin-gonic/gin"
 	"github.com/kelseyhightower/envconfig"
 	"github.com/more-than-code/deploybot/api"
@@ -8,7 +10,8 @@ import (
 )
 
 type Config struct {
-	JobRole int `envconfig:"JOB_ROLE"`
+	JobRole    int `envconfig:"JOB_ROLE"`
+	ServerPort int `envconfig:"SERVER_PORT"`
 }
 
 func main() {
@@ -29,7 +32,6 @@ func main() {
 
 	if cfg.JobRole == 1 || cfg.JobRole == 2 {
 		api := api.NewApi()
-		g.GET("/", api.DashboardHandler())
 
 		g.GET("/api/pipelines", api.GetPipelines())
 		g.GET("/api/pipeline/:name", api.GetPipeline())
@@ -43,5 +45,5 @@ func main() {
 		g.PUT("/api/taskStatus", api.PutTaskStatus())
 	}
 
-	g.Run(":8080")
+	g.Run(fmt.Sprintf(":%d", cfg.ServerPort))
 }

@@ -5,11 +5,12 @@ import (
 )
 
 type BuildConfig struct {
-	ImageName  string `json:"imageName"`
-	ImageTag   string `json:"imageTag" bson:",omitempty"`
-	Dockerfile string `json:"dockerfile" bson:",omitempty"`
-	RepoUrl    string `json:"repoUrl"`
-	RepoName   string `json:"repoName"`
+	ImageName  string             `json:"imageName"`
+	ImageTag   string             `json:"imageTag" bson:",omitempty"`
+	Args       map[string]*string `json:"args" bson:",omitempty"`
+	Dockerfile string             `json:"dockerfile" bson:",omitempty"`
+	RepoUrl    string             `json:"repoUrl"`
+	RepoName   string             `json:"repoName"`
 }
 
 type DeployConfig struct {
