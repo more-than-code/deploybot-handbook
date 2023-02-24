@@ -1,8 +1,0 @@
-.DS_Store
-.vscode
-.*env
-.env.*
-*.yaml
-pipes
-__*
-projects
